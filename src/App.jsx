@@ -1,0 +1,48 @@
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { useAuthStore } from './stores/authStore'
+import QRDisplay from './pages/QRDisplay'
+import PersonnelLogin from './pages/PersonnelLogin'
+import AdminLogin from './pages/AdminLogin'
+import AdminDashboard from './pages/AdminDashboard'
+import ProtectedRoute from './components/ProtectedRoute'
+import Layout from './components/Layout'
+
+function App() {
+  const { user } = useAuthStore()
+
+  return (
+    <Routes>
+      {/* QR Display Route - Tablet Ekranı */}
+      <Route path="/qr/:locationId" element={<QRDisplay />} />
+      
+      {/* Personnel Login Route - Personel Telefonu */}
+      <Route path="/login" element={<PersonnelLogin />} />
+      
+      {/* Admin Routes */}
+      <Route path="/admin/login" element={<AdminLogin />} />
+      
+      <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+        <Route element={<Layout />}>
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/personnel" element={<AdminDashboard section="personnel" />} />
+          <Route path="/admin/locations" element={<AdminDashboard section="locations" />} />
+          <Route path="/admin/reports" element={<AdminDashboard section="reports" />} />
+          <Route path="/admin/settings" element={<AdminDashboard section="settings" />} />
+        </Route>
+      </Route>
+
+      {/* Default Redirect */}
+      <Route path="/" element={
+        user ? (
+          user.role === 'admin' ? 
+            <Navigate to="/admin/dashboard" replace /> : 
+            <Navigate to="/login" replace />
+        ) : (
+          <Navigate to="/admin/login" replace />
+        )
+      } />
+    </Routes>
+  )
+}
+
+export default App

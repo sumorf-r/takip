@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthStore } from './stores/authStore'
 import QRDisplay from './pages/QRDisplay'
 import PersonnelLogin from './pages/PersonnelLogin'
+import CheckIn from './pages/CheckIn'
 import AdminLogin from './pages/AdminLogin'
 import AdminDashboard from './pages/AdminDashboard'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -14,6 +15,9 @@ function App() {
     <Routes>
       {/* QR Display Route - Tablet Ekranı */}
       <Route path="/qr/:locationId" element={<QRDisplay />} />
+      
+      {/* Check In Route - QR'dan gelen personel buraya yönlenir */}
+      <Route path="/checkin" element={<CheckIn />} />
       
       {/* Personnel Login Route - Personel Telefonu */}
       <Route path="/login" element={<PersonnelLogin />} />

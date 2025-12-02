@@ -9,10 +9,7 @@ import { tr } from 'date-fns/locale'
 
 const PersonnelLogin = () => {
   const navigate = useNavigate()
-  const [scanning, setScanning] = useState(false)
-  const [manualLogin, setManualLogin] = useState(false)
-  const [personnelId, setPersonnelId] = useState('')
-  const [password, setPassword] = useState('')
+  const [scanning, setScanning] = useState(true) // Direkt açık başlasın
   const [loading, setLoading] = useState(false)
   const [lastAction, setLastAction] = useState(null)
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -27,15 +24,7 @@ const PersonnelLogin = () => {
 
   const handleScan = async (scanResult) => {
     if (!scanResult || !scanResult[0]?.rawValue) return
-
-    // Önce login olmuş mu kontrol et
-    const storedPersonnelId = sessionStorage.getItem('personnelId')
-    if (!storedPersonnelId) {
-      toast.error('Önce giriş yapmalısınız!')
-      setScanning(false)
-      setManualLogin(true)
-      return
-    }
+    if (loading) return // Çift okumayı önle
 
     try {
       setLoading(true)
@@ -48,6 +37,9 @@ const PersonnelLogin = () => {
         return
       }
 
+      // QR okutuldu - kameradan personnel_id çıkaracağız (QR'da olacak)
+      // Veya QR'da sadece location var, backend personnel'i algılayacak
+      
       // Process check-in/out with REAL DATABASE
       const response = await fetch('/.netlify/functions/db-attendance-check', {
         method: 'POST',
@@ -55,7 +47,7 @@ const PersonnelLogin = () => {
         body: JSON.stringify({
           qrCode: qrData.code,
           locationId: qrData.locationId,
-          personnelId: storedPersonnelId,
+          personnelId: qrData.personnelId || 'auto', // QR'dan gelecek veya auto-detect
         })
       })
 
@@ -75,69 +67,22 @@ const PersonnelLogin = () => {
           workHours: result.attendance?.work_hours
         })
         
-        setScanning(false)
-        
-        // 3 saniye sonra ekranı temizle
+        // 5 saniye bekle, sonra tekrar QR okumaya hazır ol
         setTimeout(() => {
           setLastAction(null)
-        }, 10000)
+          setLoading(false)
+        }, 5000)
       } else {
         toast.error(result.error || 'İşlem başarısız')
+        setLoading(false)
       }
     } catch (error) {
       console.error('QR okuma hatası:', error)
       toast.error('QR kod okunamadı: ' + error.message)
-    } finally {
       setLoading(false)
     }
   }
 
-  const handleManualSubmit = async (e) => {
-    e.preventDefault()
-    
-    if (!personnelId || !password) {
-      toast.error('Lütfen tüm alanları doldurun')
-      return
-    }
-
-    setLoading(true)
-    
-    try {
-      // REAL DATABASE LOGIN
-      const response = await fetch('/.netlify/functions/db-auth-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          email: personnelId, // personnelNo olarak kullanılacak
-          password: password,
-          role: 'personnel'
-        })
-      })
-
-      const result = await response.json()
-      
-      if (result.success && result.user) {
-        toast.success(`Hoş geldiniz ${result.user.name}!`)
-        
-        // Store personnel session
-        sessionStorage.setItem('personnelId', result.user.id)
-        sessionStorage.setItem('personnelNo', result.user.personnel_no)
-        sessionStorage.setItem('personnelName', result.user.name)
-        
-        setManualLogin(false)
-        setScanning(true)
-        setPersonnelId('')
-        setPassword('')
-      } else {
-        toast.error('Personel no veya şifre hatalı')
-      }
-    } catch (error) {
-      console.error('Login error:', error)
-      toast.error('Giriş yapılamadı: ' + error.message)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
@@ -201,114 +146,34 @@ const PersonnelLogin = () => {
           )}
 
           <div className="p-6">
-            {/* Toggle Buttons */}
-            <div className="flex gap-2 mb-6">
-              <button
-                onClick={() => {
-                  setScanning(!scanning)
-                  setManualLogin(false)
-                }}
-                className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${
-                  scanning 
-                    ? 'bg-primary-600 text-white' 
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {scanning ? <CameraOff className="w-5 h-5" /> : <Camera className="w-5 h-5" />}
-                QR Kod Okut
-              </button>
-              
-              <button
-                onClick={() => {
-                  setManualLogin(!manualLogin)
-                  setScanning(false)
-                }}
-                className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${
-                  manualLogin 
-                    ? 'bg-primary-600 text-white' 
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                <LogIn className="w-5 h-5" />
-                Manuel Giriş
-              </button>
-            </div>
-
-            {/* QR Scanner */}
-            {scanning && (
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="mb-6"
-              >
-                <div className="bg-gray-900 rounded-lg overflow-hidden">
-                  <QrScanner
-                    onDecode={handleScan}
-                    onError={(error) => console.log(error?.message)}
-                    containerStyle={{ width: '100%' }}
-                    videoStyle={{ width: '100%' }}
-                  />
-                </div>
-                <p className="text-center text-sm text-gray-600 mt-3">
-                  QR kodu kameraya gösterin
+            {/* QR Scanner - Sürekli Açık */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="mb-6"
+            >
+              <div className="bg-gray-900 rounded-lg overflow-hidden">
+                <QrScanner
+                  onDecode={handleScan}
+                  onError={(error) => console.log(error?.message)}
+                  containerStyle={{ width: '100%' }}
+                  videoStyle={{ width: '100%' }}
+                />
+              </div>
+              <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-center text-sm text-blue-900 font-medium">
+                  📱 QR kodu tablet ekranından okutun
                 </p>
-              </motion.div>
-            )}
-
-            {/* Manual Login Form */}
-            {manualLogin && (
-              <motion.form 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                onSubmit={handleManualSubmit}
-                className="space-y-4"
-              >
-                <div>
-                  <label className="label">Personel No</label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                      type="text"
-                      value={personnelId}
-                      onChange={(e) => setPersonnelId(e.target.value)}
-                      className="input-field pl-10"
-                      placeholder="Personel numaranız"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="label">Şifre</label>
-                  <div className="relative">
-                    <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="input-field pl-10"
-                      placeholder="••••••••"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="btn-primary w-full"
-                >
-                  {loading ? 'Giriş yapılıyor...' : 'Giriş Yap'}
-                </button>
-              </motion.form>
-            )}
-
-            {/* Instructions */}
-            {!scanning && !manualLogin && (
-              <div className="bg-gray-50 rounded-lg p-6 text-center">
-                <p className="text-gray-600">
-                  Giriş veya çıkış yapmak için yukarıdaki seçeneklerden birini kullanın
+                <p className="text-center text-xs text-blue-700 mt-1">
+                  İlk okutma: Giriş • İkinci okutma: Çıkış
                 </p>
+              </div>
+            </motion.div>
+
+            {/* Loading State */}
+            {loading && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
+                <p className="text-yellow-800 font-medium">⏳ İşleniyor...</p>
               </div>
             )}
           </div>

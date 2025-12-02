@@ -22,16 +22,12 @@ const QRDisplay = () => {
     address: 'İstanbul, Türkiye'
   }
 
-  // Generate new QR code
+  // Generate new QR code - Contains URL to check-in page
   const generateNewQR = async () => {
     const timestamp = Date.now()
     const randomStr = Math.random().toString(36).substring(2, 15)
-    const qrData = JSON.stringify({
-      locationId,
-      timestamp,
-      code: `${locationId}-${timestamp}-${randomStr}`,
-      expiresAt: timestamp + 90000 // 90 seconds
-    })
+    const checkInUrl = `https://takibonline.netlify.app/checkin?loc=${locationId}&t=${timestamp}&c=${randomStr}`
+    const qrData = checkInUrl
     
     setQrCode(qrData)
     

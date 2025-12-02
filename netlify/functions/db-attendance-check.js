@@ -22,22 +22,27 @@ export async function handler(event, context) {
   }
 
   try {
-    const { qrCode, personnelId, locationId } = JSON.parse(event.body)
+    const { qrCode, personnelId, locationId, action } = JSON.parse(event.body)
     
     // Start transaction
     const result = await db.transaction(async (client) => {
       
-      // 1. Validate QR Code
-      const qrQuery = await client.query(
-        'SELECT * FROM qr_codes WHERE code = $1 AND expires_at > NOW() AND is_used = false',
-        [qrCode]
-      )
-      
-      if (qrQuery.rows.length === 0) {
-        throw new Error('QR kod geçersiz veya süresi dolmuş')
+      // 1. Simple validation - QR code is just for tracking now
+      if (!personnelId || !locationId) {
+        throw new Error('Eksik bilgi')
       }
       
-      const qrRecord = qrQuery.rows[0]
+      // Get location ID
+      const locationQuery = await client.query(
+        'SELECT id FROM locations WHERE location_code = $1',
+        [locationId]
+      )
+      
+      if (locationQuery.rows.length === 0) {
+        throw new Error('Geçersiz lokasyon')
+      }
+      
+      const locationDbId = locationQuery.rows[0].id
       
       // 2. Check if personnel has open attendance
       const openAttendanceQuery = await client.query(
@@ -52,15 +57,17 @@ export async function handler(event, context) {
       
       const hasOpenAttendance = openAttendanceQuery.rows.length > 0
       let attendanceRecord
+      let workHours = 0
       
-      if (hasOpenAttendance) {
+      // Force action based on parameter
+      if (action === 'check-out' && hasOpenAttendance) {
         // Check-out operation
         const attendance = openAttendanceQuery.rows[0]
         
         // Calculate work hours
         const checkOutTime = new Date()
         const checkInTime = new Date(attendance.check_in_time)
-        const workHours = (checkOutTime - checkInTime) / (1000 * 60 * 60) // Convert to hours
+        workHours = (checkOutTime - checkInTime) / (1000 * 60 * 60) // Convert to hours
         
         // Update attendance record
         const updateQuery = await client.query(
@@ -87,7 +94,7 @@ export async function handler(event, context) {
           [personnelId, 'check_out', 'attendance', attendance.id]
         )
         
-      } else {
+      } else if (action === 'check-in' && !hasOpenAttendance) {
         // Check-in operation
         
         // Get work schedule if exists
@@ -117,17 +124,15 @@ export async function handler(event, context) {
             personnel_id, 
             location_id, 
             check_in_time, 
-            qr_code_id,
             check_in_method,
             status,
             ip_address,
             device_info
-          ) VALUES ($1, $2, NOW(), $3, 'qr', $4, $5, $6)
+          ) VALUES ($1, $2, NOW(), 'qr', $3, $4, $5)
           RETURNING *`,
           [
             personnelId, 
-            locationId || qrRecord.location_id,
-            qrRecord.id,
+            locationDbId,
             status,
             event.headers['x-forwarded-for'] || event.headers['client-ip'],
             event.headers['user-agent']
@@ -141,13 +146,14 @@ export async function handler(event, context) {
           'INSERT INTO audit_logs (personnel_id, action, table_name, record_id) VALUES ($1, $2, $3, $4)',
           [personnelId, 'check_in', 'attendance', attendanceRecord.id]
         )
+      } else {
+        // Invalid action or state
+        throw new Error(
+          action === 'check-in' && hasOpenAttendance 
+            ? 'Zaten açık bir giriş kaydınız var' 
+            : 'Açık giriş kaydınız bulunmuyor'
+        )
       }
-      
-      // 3. Mark QR code as used
-      await client.query(
-        'UPDATE qr_codes SET is_used = true, used_by = $1, used_at = NOW() WHERE id = $2',
-        [personnelId, qrRecord.id]
-      )
       
       // 4. Get personnel info for response
       const personnelQuery = await client.query(
@@ -178,7 +184,8 @@ export async function handler(event, context) {
       return {
         attendance: attendanceRecord,
         personnel,
-        action: hasOpenAttendance ? 'check-out' : 'check-in'
+        action: action,
+        workHours: workHours.toFixed(2)
       }
     })
     
@@ -190,6 +197,7 @@ export async function handler(event, context) {
         action: result.action,
         attendance: result.attendance,
         personnel: result.personnel,
+        workHours: result.workHours,
         message: `${result.action === 'check-in' ? 'Giriş' : 'Çıkış'} başarıyla kaydedildi`
       })
     }

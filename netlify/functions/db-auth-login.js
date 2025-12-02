@@ -1,7 +1,17 @@
 // Real Database Authentication with PostgreSQL
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-import { db } from '../../src/lib/db.js'
+import pg from 'pg'
+const { Pool } = pg
+
+const pool = new Pool({
+  host: process.env.VITE_DB_HOST || '5.175.136.149',
+  port: process.env.VITE_DB_PORT || 5432,
+  database: process.env.VITE_DB_NAME || 'restaurant_tracking',
+  user: process.env.VITE_DB_USER || 'restaurant_app',
+  password: process.env.VITE_DB_PASSWORD || 'RestaurantDB2024Secure',
+  ssl: false
+})
 
 export async function handler(event, context) {
   const headers = {
@@ -28,12 +38,15 @@ export async function handler(event, context) {
 
     // Admin login
     if (role === 'admin') {
-      const userQuery = await db.query(
+      const client = await pool.connect()
+      
+      const userQuery = await client.query(
         'SELECT id, email, name, role, password_hash FROM users WHERE email = $1 AND is_active = true',
         [email]
       )
 
       if (userQuery.rows.length === 0) {
+        client.release()
         return {
           statusCode: 401,
           headers,
@@ -47,6 +60,7 @@ export async function handler(event, context) {
       const isValidPassword = await bcrypt.compare(password, user.password_hash)
       
       if (!isValidPassword) {
+        client.release()
         return {
           statusCode: 401,
           headers,
@@ -55,7 +69,7 @@ export async function handler(event, context) {
       }
 
       // Update last login
-      await db.query(
+      await client.query(
         'UPDATE users SET last_login = NOW() WHERE id = $1',
         [user.id]
       )
@@ -68,11 +82,13 @@ export async function handler(event, context) {
       )
 
       // Log the action
-      await db.query(
+      await client.query(
         'INSERT INTO audit_logs (user_id, action, ip_address) VALUES ($1, $2, $3)',
         [user.id, 'admin_login', event.headers['x-forwarded-for'] || event.headers['client-ip']]
       )
 
+      client.release()
+      
       return {
         statusCode: 200,
         headers,
@@ -91,12 +107,15 @@ export async function handler(event, context) {
 
     // Personnel login
     if (role === 'personnel') {
-      const personnelQuery = await db.query(
+      const client = await pool.connect()
+      
+      const personnelQuery = await client.query(
         'SELECT id, personnel_no, name, surname, password_hash, location_id FROM personnel WHERE personnel_no = $1 AND is_active = true',
         [email] // email parametresi aslında personnel_no olarak kullanılıyor
       )
 
       if (personnelQuery.rows.length === 0) {
+        client.release()
         return {
           statusCode: 401,
           headers,
@@ -110,6 +129,7 @@ export async function handler(event, context) {
       const isValidPassword = await bcrypt.compare(password, personnel.password_hash)
       
       if (!isValidPassword) {
+        client.release()
         return {
           statusCode: 401,
           headers,
@@ -130,11 +150,13 @@ export async function handler(event, context) {
       )
 
       // Log the action
-      await db.query(
+      await client.query(
         'INSERT INTO audit_logs (personnel_id, action, ip_address) VALUES ($1, $2, $3)',
         [personnel.id, 'personnel_login', event.headers['x-forwarded-for'] || event.headers['client-ip']]
       )
 
+      client.release()
+      
       return {
         statusCode: 200,
         headers,

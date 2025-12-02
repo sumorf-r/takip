@@ -1,5 +1,15 @@
 // Real Database Attendance Check-in/Check-out
-import { db, sql } from '../../src/lib/db.js'
+import pg from 'pg'
+const { Pool } = pg
+
+const pool = new Pool({
+  host: process.env.VITE_DB_HOST || '5.175.136.149',
+  port: process.env.VITE_DB_PORT || 5432,
+  database: process.env.VITE_DB_NAME || 'restaurant_tracking',
+  user: process.env.VITE_DB_USER || 'restaurant_app',
+  password: process.env.VITE_DB_PASSWORD || 'RestaurantDB2024Secure',
+  ssl: false
+})
 
 export async function handler(event, context) {
   const headers = {
@@ -24,8 +34,11 @@ export async function handler(event, context) {
   try {
     const { qrCode, personnelId, locationId, action } = JSON.parse(event.body)
     
-    // Start transaction
-    const result = await db.transaction(async (client) => {
+    const client = await pool.connect()
+    
+    try {
+      // Start transaction
+      await client.query('BEGIN')
       
       // 1. Simple validation - QR code is just for tracking now
       if (!personnelId || !locationId) {
@@ -181,25 +194,28 @@ export async function handler(event, context) {
         ]
       )
       
+      // Commit transaction
+      await client.query('COMMIT')
+      client.release()
+      
       return {
-        attendance: attendanceRecord,
-        personnel,
-        action: action,
-        workHours: workHours.toFixed(2)
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          success: true,
+          action: action,
+          attendance: attendanceRecord,
+          personnel,
+          workHours: workHours.toFixed(2),
+          message: `${action === 'check-in' ? 'Giriş' : 'Çıkış'} başarıyla kaydedildi`
+        })
       }
-    })
-    
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({
-        success: true,
-        action: result.action,
-        attendance: result.attendance,
-        personnel: result.personnel,
-        workHours: result.workHours,
-        message: `${result.action === 'check-in' ? 'Giriş' : 'Çıkış'} başarıyla kaydedildi`
-      })
+      
+    } catch (error) {
+      // Rollback transaction
+      await client.query('ROLLBACK')
+      client.release()
+      throw error
     }
     
   } catch (error) {

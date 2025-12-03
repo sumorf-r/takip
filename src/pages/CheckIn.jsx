@@ -313,14 +313,14 @@ const CheckIn = () => {
   // Token kontrol ediliyor
   if (tokenValid === null) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#3d1e5d' }}>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="text-center"
         >
-          <Loader className="w-16 h-16 animate-spin text-primary-600 mx-auto mb-4" />
-          <p className="text-gray-600 text-lg">QR kod doğrulanıyor...</p>
+          <Loader className="w-16 h-16 animate-spin text-white mx-auto mb-4" />
+          <p className="text-white text-lg">QR kod doğrulanıyor...</p>
         </motion.div>
       </div>
     )
@@ -329,7 +329,7 @@ const CheckIn = () => {
   // Token geçersiz - Hata sayfası
   if (tokenValid === false) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-100 flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#3d1e5d' }}>
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -360,7 +360,10 @@ const CheckIn = () => {
             </div>
             <button 
               onClick={() => window.location.reload()}
-              className="mt-6 w-full bg-primary-600 text-white py-3 rounded-lg hover:bg-primary-700 transition-colors font-medium"
+              className="mt-6 w-full text-white py-3 rounded-lg transition-colors font-medium shadow-lg"
+              style={{ backgroundColor: '#3d1e5d' }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2d1545'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3d1e5d'}
             >
               Tekrar Dene
             </button>
@@ -372,22 +375,56 @@ const CheckIn = () => {
 
   // Token geçerli - Normal sayfa
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#3d1e5d' }}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md"
       >
-        {/* Header */}
+        {/* mes.ai Logo */}
         <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+          <motion.div 
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+            className="mb-4"
+          >
+            <div className="flex justify-center items-center gap-3">
+              <svg width="50" height="50" viewBox="0 0 100 100" className="text-white">
+                <g fill="none" stroke="currentColor" strokeWidth="3.5">
+                  {/* Flower-like clock design */}
+                  <ellipse cx="50" cy="20" rx="12" ry="15" fill="currentColor" opacity="0.9" transform="rotate(0 50 50)"/>
+                  <ellipse cx="50" cy="20" rx="12" ry="15" fill="currentColor" opacity="0.9" transform="rotate(45 50 50)"/>
+                  <ellipse cx="50" cy="20" rx="12" ry="15" fill="currentColor" opacity="0.9" transform="rotate(90 50 50)"/>
+                  <ellipse cx="50" cy="20" rx="12" ry="15" fill="currentColor" opacity="0.9" transform="rotate(135 50 50)"/>
+                  <ellipse cx="50" cy="20" rx="12" ry="15" fill="currentColor" opacity="0.9" transform="rotate(180 50 50)"/>
+                  <ellipse cx="50" cy="20" rx="12" ry="15" fill="currentColor" opacity="0.9" transform="rotate(225 50 50)"/>
+                  <ellipse cx="50" cy="20" rx="12" ry="15" fill="currentColor" opacity="0.9" transform="rotate(270 50 50)"/>
+                  <ellipse cx="50" cy="20" rx="12" ry="15" fill="currentColor" opacity="0.9" transform="rotate(315 50 50)"/>
+                  
+                  {/* Center clock circle */}
+                  <circle cx="50" cy="50" r="20" fill="#3d1e5d" stroke="currentColor"/>
+                  
+                  {/* Clock hands */}
+                  <line x1="50" y1="50" x2="50" y2="35" stroke="white" strokeWidth="3" strokeLinecap="round"/>
+                  <line x1="50" y1="50" x2="58" y2="55" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+                  
+                  {/* Center dot */}
+                  <circle cx="50" cy="50" r="3" fill="white"/>
+                </g>
+              </svg>
+              <span className="text-4xl font-bold text-white tracking-wide lowercase">mes.ai</span>
+            </div>
+          </motion.div>
+          
+          <h1 className="text-2xl font-semibold text-white mb-2">
             Personel Giriş/Çıkış
           </h1>
-          <div className="flex items-center justify-center gap-2 text-gray-600">
+          <div className="flex items-center justify-center gap-2 text-white/80">
             <MapPin className="w-4 h-4" />
             <span>{locationNames[locationId] || 'Restoran'}</span>
           </div>
-          <div className="flex items-center justify-center gap-2 text-gray-600 mt-1">
+          <div className="flex items-center justify-center gap-2 text-white/80 mt-1">
             <Clock className="w-4 h-4" />
             <span>{format(currentTime, 'HH:mm:ss')}</span>
           </div>
@@ -440,9 +477,25 @@ const CheckIn = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="btn-primary w-full"
+                className="w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 text-white shadow-lg flex items-center justify-center gap-2"
+                style={{ 
+                  backgroundColor: loading ? '#5a2d83' : '#3d1e5d',
+                  opacity: loading ? 0.7 : 1
+                }}
+                onMouseEnter={(e) => !loading && (e.currentTarget.style.backgroundColor = '#2d1545')}
+                onMouseLeave={(e) => !loading && (e.currentTarget.style.backgroundColor = '#3d1e5d')}
               >
-                {loading ? 'Giriş yapılıyor...' : 'Giriş Yap'}
+                {loading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Giriş yapılıyor...
+                  </>
+                ) : (
+                  <>
+                    <LogIn className="w-5 h-5" />
+                    Giriş Yap
+                  </>
+                )}
               </button>
             </motion.form>
           ) : (
@@ -466,7 +519,7 @@ const CheckIn = () => {
 
               {loading ? (
                 <div className="py-8">
-                  <Loader className="w-12 h-12 animate-spin text-primary-600 mx-auto" />
+                  <Loader className="w-12 h-12 animate-spin mx-auto" style={{ color: '#3d1e5d' }} />
                   <p className="text-gray-600 mt-4">İşleniyor...</p>
                 </div>
               ) : (
@@ -474,7 +527,10 @@ const CheckIn = () => {
                   {!hasActiveCheckIn ? (
                     <button
                       onClick={() => handleCheckInOut('check-in')}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-3"
+                      className="w-full text-white py-4 px-6 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-3 shadow-lg"
+                      style={{ backgroundColor: '#3d1e5d' }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2d1545'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3d1e5d'}
                     >
                       <LogIn className="w-6 h-6" />
                       GİRİŞ YAP
@@ -482,7 +538,10 @@ const CheckIn = () => {
                   ) : (
                     <button
                       onClick={() => handleCheckInOut('check-out')}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-3"
+                      className="w-full text-white py-4 px-6 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-3 shadow-lg"
+                      style={{ backgroundColor: '#7e3fb0' }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#5a2d83'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#7e3fb0'}
                     >
                       <LogOut className="w-6 h-6" />
                       ÇIKIŞ YAP
@@ -495,9 +554,12 @@ const CheckIn = () => {
                       setPersonnelData(null)
                       sessionStorage.removeItem('personnelData')
                     }}
-                    className="w-full text-gray-500 hover:text-gray-700 py-2"
+                    className="w-full py-2 transition-colors"
+                    style={{ color: '#7e3fb0' }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = '#5a2d83'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = '#7e3fb0'}
                   >
-                    ← Farklı kullanıcı ile giriş yap
+                    Başka Personel
                   </button>
                 </div>
               )}

@@ -23,6 +23,19 @@ const AdminDashboard = ({ section = 'dashboard' }) => {
   const [searchParams, setSearchParams] = useSearchParams()
   const { user, logout } = useAuthStore()
   const [activeSection, setActiveSection] = useState(section)
+  
+  // Update document title based on section
+  useEffect(() => {
+    const titles = {
+      dashboard: 'Ana Sayfa',
+      personnel: 'Personel Yönetimi',
+      locations: 'Lokasyon Yönetimi',
+      attendance: 'Devamsızlık Takibi',
+      reports: 'Raporlar',
+      settings: 'Ayarlar'
+    }
+    document.title = `${titles[activeSection] || 'Admin'} - Takip Sistemi`
+  }, [activeSection])
   const [searchTerm, setSearchTerm] = useState('')
   const [dateFilter, setDateFilter] = useState('today')
   const [locationFilter, setLocationFilter] = useState('all')
@@ -76,8 +89,13 @@ const AdminDashboard = ({ section = 'dashboard' }) => {
     const sectionParam = searchParams.get('section')
     if (sectionParam) {
       setActiveSection(sectionParam)
-    } else if (section !== 'dashboard') {
+    } else if (section) {
       setActiveSection(section)
+    }
+    
+    // Reload data when section changes to personnel
+    if ((sectionParam === 'personnel' || section === 'personnel') && personnel.length === 0) {
+      fetchDashboardData()
     }
   }, [section, searchParams])
 

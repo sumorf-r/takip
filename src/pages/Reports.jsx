@@ -1,15 +1,21 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { 
   FileText, Download, Calendar, Users, MapPin, 
   TrendingUp, DollarSign, Clock, Filter, Loader,
-  BarChart3, PieChart as PieChartIcon, Activity
+  BarChart3, PieChart as PieChartIcon, Activity,
+  Home, Settings, LogOut, ChevronRight
 } from 'lucide-react'
 import { format, subDays, startOfMonth, endOfMonth } from 'date-fns'
 import { tr } from 'date-fns/locale'
 import toast from 'react-hot-toast'
+import { useAuthStore } from '../stores/authStore'
 
 const Reports = () => {
+  const navigate = useNavigate()
+  const { user, logout } = useAuthStore()
+  
   const [reportType, setReportType] = useState('attendance') // attendance, personnel, location
   const [loading, setLoading] = useState(false)
   const [reportData, setReportData] = useState(null)
@@ -23,6 +29,29 @@ const Reports = () => {
   // Locations and Personnel for filters
   const [locations, setLocations] = useState([])
   const [personnel, setPersonnel] = useState([])
+  
+  // Menu items
+  const menuItems = [
+    { id: 'dashboard', label: 'Ana Sayfa', icon: Home },
+    { id: 'personnel', label: 'Personel', icon: Users },
+    { id: 'locations', label: 'Lokasyonlar', icon: MapPin },
+    { id: 'reports', label: 'Raporlar', icon: FileText },
+    { id: 'settings', label: 'Ayarlar', icon: Settings }
+  ]
+  
+  const handleSectionChange = (sectionId) => {
+    if (sectionId === 'reports') {
+      // Zaten reports'dayız
+      return
+    }
+    navigate(`/admin/${sectionId}`)
+  }
+  
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+    toast.success('Çıkış yapıldı')
+  }
 
   useEffect(() => {
     fetchFiltersData()
@@ -160,18 +189,68 @@ const Reports = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <FileText className="w-8 h-8 text-primary-600" />
-            Raporlar
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Detaylı istatistikler ve raporlar
-          </p>
+    <div className="flex h-screen bg-gray-50">
+      {/* Sidebar */}
+      <motion.aside 
+        initial={{ x: -250 }}
+        animate={{ x: 0 }}
+        className="w-64 bg-white shadow-lg flex flex-col"
+      >
+        <div className="p-6 border-b border-gray-200">
+          <h2 className="text-xl font-bold text-primary-600">Takip Sistemi</h2>
+          <p className="text-sm text-gray-600 mt-1">{user?.name || 'Admin'}</p>
         </div>
+        
+        <nav className="p-4 flex-1">
+          {menuItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => handleSectionChange(item.id)}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors mb-2 ${
+                item.id === 'reports'
+                  ? 'bg-primary-50 text-primary-600'
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <item.icon className="w-5 h-5" />
+              <span className="font-medium">{item.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        <div className="p-4 border-t border-gray-200">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+          >
+            <LogOut className="w-5 h-5" />
+            <span className="font-medium">Çıkış Yap</span>
+          </button>
+        </div>
+      </motion.aside>
+
+      {/* Main Content */}
+      <div className="flex-1 overflow-auto">
+        <div className="p-8">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 text-sm text-gray-600 mb-6">
+            <button onClick={() => navigate('/admin/dashboard')} className="hover:text-primary-600">
+              Ana Sayfa
+            </button>
+            <ChevronRight className="w-4 h-4" />
+            <span className="text-gray-900 font-medium">Raporlar</span>
+          </div>
+
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+              <FileText className="w-8 h-8 text-primary-600" />
+              Raporlar
+            </h1>
+            <p className="text-gray-600 mt-2">
+              Detaylı istatistikler ve raporlar
+            </p>
+          </div>
 
         {/* Report Type Selection */}
         <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
@@ -535,6 +614,7 @@ const Reports = () => {
             <p className="text-gray-500">Rapor türü seçin ve filtreleyin</p>
           </div>
         )}
+        </div>
       </div>
     </div>
   )

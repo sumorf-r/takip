@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Mail, Lock, LogIn, Shield, AlertCircle } from 'lucide-react'
+import { Mail, Lock, LogIn } from 'lucide-react'
 import { useAuthStore } from '../stores/authStore'
 import toast from 'react-hot-toast'
 
@@ -63,7 +63,7 @@ const AdminLogin = () => {
   }
 
   return (
-    <div className="min-h-screen gradient-bg flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#3d1e5d' }}>
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -75,15 +75,35 @@ const AdminLogin = () => {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-            className="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur rounded-full mb-4"
+            className="mb-6"
           >
-            <Shield className="w-10 h-10 text-white" />
+            {/* mes.ai Logo */}
+            <div className="flex justify-center items-center gap-3">
+              <svg width="60" height="60" viewBox="0 0 100 100" className="text-white">
+                <g fill="currentColor">
+                  {/* Clock flower petals */}
+                  <circle cx="50" cy="15" r="8" opacity="0.9"/>
+                  <circle cx="73" cy="27" r="8" opacity="0.9"/>
+                  <circle cx="85" cy="50" r="8" opacity="0.9"/>
+                  <circle cx="73" cy="73" r="8" opacity="0.9"/>
+                  <circle cx="50" cy="85" r="8" opacity="0.9"/>
+                  <circle cx="27" cy="73" r="8" opacity="0.9"/>
+                  <circle cx="15" cy="50" r="8" opacity="0.9"/>
+                  <circle cx="27" cy="27" r="8" opacity="0.9"/>
+                  
+                  {/* Center clock */}
+                  <circle cx="50" cy="50" r="22" fill="none" stroke="currentColor" strokeWidth="3"/>
+                  <circle cx="50" cy="50" r="2"/>
+                  {/* Clock hands */}
+                  <line x1="50" y1="50" x2="50" y2="35" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+                  <line x1="50" y1="50" x2="60" y2="55" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                </g>
+              </svg>
+              <span className="text-5xl font-bold text-white tracking-tight">mes.ai</span>
+            </div>
           </motion.div>
-          <h1 className="text-4xl font-bold text-white mb-2">
-            Yönetici Paneli
-          </h1>
-          <p className="text-white/80">
-            Restoran Personel Takip Sistemi
+          <p className="text-white/90 text-lg">
+            Personel Takip Sistemi
           </p>
         </div>
 
@@ -94,18 +114,6 @@ const AdminLogin = () => {
           transition={{ delay: 0.1 }}
           className="bg-white rounded-2xl shadow-2xl p-8"
         >
-          {/* Admin Login Info */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
-              <div className="text-sm">
-                <p className="font-semibold text-blue-900 mb-1">Admin Giriş Bilgileri</p>
-                <p className="text-blue-700">E-posta: myusufyanik@gundogdugida.com</p>
-                <p className="text-blue-700">Şifre: 1q2w3e4r@</p>
-              </div>
-            </div>
-          </div>
-
           <form onSubmit={handleLogin} className="space-y-5">
             {/* Email Input */}
             <div>
@@ -117,7 +125,7 @@ const AdminLogin = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="input-field pl-10"
-                  placeholder="admin@restaurant.com"
+                  placeholder="E-posta adresinizi girin"
                   required
                 />
               </div>
@@ -146,13 +154,17 @@ const AdminLogin = () => {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                  className="w-4 h-4 border-gray-300 rounded"
+                  style={{ accentColor: '#3d1e5d' }}
                 />
                 <span className="text-sm text-gray-700">Beni hatırla</span>
               </label>
               <button
                 type="button"
-                className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+                className="text-sm font-medium transition-colors"
+                style={{ color: '#3d1e5d' }}
+                onMouseEnter={(e) => e.currentTarget.style.color = '#2d1545'}
+                onMouseLeave={(e) => e.currentTarget.style.color = '#3d1e5d'}
               >
                 Şifremi unuttum
               </button>
@@ -173,7 +185,13 @@ const AdminLogin = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="btn-primary w-full flex items-center justify-center gap-2"
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all duration-200 text-white shadow-lg"
+              style={{ 
+                backgroundColor: '#3d1e5d',
+                opacity: isLoading ? 0.7 : 1
+              }}
+              onMouseEnter={(e) => !isLoading && (e.currentTarget.style.backgroundColor = '#2d1545')}
+              onMouseLeave={(e) => !isLoading && (e.currentTarget.style.backgroundColor = '#3d1e5d')}
             >
               {isLoading ? (
                 <>
@@ -203,7 +221,10 @@ const AdminLogin = () => {
           <div className="text-center">
             <button
               onClick={() => navigate('/login')}
-              className="text-primary-600 hover:text-primary-700 font-medium text-sm"
+              className="font-medium text-sm transition-colors"
+              style={{ color: '#3d1e5d' }}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#2d1545'}
+              onMouseLeave={(e) => e.currentTarget.style.color = '#3d1e5d'}
             >
               ← Personel Girişi
             </button>
@@ -211,9 +232,9 @@ const AdminLogin = () => {
         </motion.div>
 
         {/* Footer */}
-        <div className="text-center mt-8 text-white/60 text-sm">
-          <p>© 2024 Restoran Takip Sistemi</p>
-          <p className="mt-1">Tüm hakları saklıdır</p>
+        <div className="text-center mt-8 text-white/70 text-sm">
+          <p>© 2024 mes.ai</p>
+          <p className="mt-1">Personel Takip Sistemi</p>
         </div>
       </motion.div>
     </div>

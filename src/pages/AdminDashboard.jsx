@@ -13,6 +13,8 @@ import { useAuthStore } from '../stores/authStore'
 import toast from 'react-hot-toast'
 import PersonnelAddModal from '../components/PersonnelAddModal'
 import PersonnelShiftModal from '../components/PersonnelShiftModal'
+import PersonnelDetailModal from '../components/PersonnelDetailModal'
+import PersonnelEditModal from '../components/PersonnelEditModal'
 
 const AdminDashboard = ({ section = 'dashboard' }) => {
   const navigate = useNavigate()
@@ -24,7 +26,10 @@ const AdminDashboard = ({ section = 'dashboard' }) => {
   const [locationFilter, setLocationFilter] = useState('all')
   const [showModal, setShowModal] = useState(false)
   const [showShiftModal, setShowShiftModal] = useState(false)
+  const [showDetailModal, setShowDetailModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
   const [selectedPersonnel, setSelectedPersonnel] = useState(null)
+  const [selectedPersonnelId, setSelectedPersonnelId] = useState(null)
   const [selectedItem, setSelectedItem] = useState(null)
   
   // API Data States
@@ -89,6 +94,33 @@ const AdminDashboard = ({ section = 'dashboard' }) => {
   const handleSectionChange = (sectionId) => {
     setActiveSection(sectionId)
     navigate(`/admin/${sectionId === 'dashboard' ? 'dashboard' : sectionId}`)
+  }
+
+  // Delete personnel
+  const handleDeletePersonnel = async (personnelId, personnelName) => {
+    if (!confirm(`${personnelName} personelini pasifleştirmek istediğinize emin misiniz?`)) {
+      return
+    }
+
+    try {
+      const response = await fetch('/.netlify/functions/personnel-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ personnelId })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        toast.success('Personel pasifleştirildi')
+        fetchDashboardData()
+      } else {
+        toast.error(result.error || 'Silme işlemi başarısız')
+      }
+    } catch (error) {
+      console.error('Delete error:', error)
+      toast.error('Bir hata oluştu')
+    }
   }
 
   // Excel Export
@@ -370,21 +402,39 @@ const AdminDashboard = ({ section = 'dashboard' }) => {
                         <div className="flex items-center justify-end gap-2">
                           <button 
                             onClick={() => {
+                              setSelectedPersonnelId(person.id)
+                              setShowDetailModal(true)
+                            }}
+                            className="text-primary-600 hover:text-primary-900 transition-colors"
+                            title="Detay Görüntüle"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button 
+                            onClick={() => {
+                              setSelectedPersonnel(person)
+                              setShowEditModal(true)
+                            }}
+                            className="text-blue-600 hover:text-blue-900 transition-colors"
+                            title="Düzenle"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button 
+                            onClick={() => {
                               setSelectedPersonnel(person)
                               setShowShiftModal(true)
                             }}
-                            className="text-purple-600 hover:text-purple-900"
+                            className="text-purple-600 hover:text-purple-900 transition-colors"
                             title="Mesai Ayarları"
                           >
                             <Settings className="w-4 h-4" />
                           </button>
-                          <button className="text-primary-600 hover:text-primary-900" title="Detay">
-                            <Eye className="w-4 h-4" />
-                          </button>
-                          <button className="text-blue-600 hover:text-blue-900" title="Düzenle">
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button className="text-red-600 hover:text-red-900" title="Sil">
+                          <button 
+                            onClick={() => handleDeletePersonnel(person.id, `${person.name} ${person.surname}`)}
+                            className="text-red-600 hover:text-red-900 transition-colors"
+                            title="Pasifleştir"
+                          >
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
@@ -552,6 +602,28 @@ const AdminDashboard = ({ section = 'dashboard' }) => {
         }}
         onSuccess={fetchDashboardData}
         personnel={selectedPersonnel}
+      />
+
+      {/* Personel Detay Modal */}
+      <PersonnelDetailModal
+        isOpen={showDetailModal}
+        onClose={() => {
+          setShowDetailModal(false)
+          setSelectedPersonnelId(null)
+        }}
+        personnelId={selectedPersonnelId}
+      />
+
+      {/* Personel Düzenle Modal */}
+      <PersonnelEditModal
+        isOpen={showEditModal}
+        onClose={() => {
+          setShowEditModal(false)
+          setSelectedPersonnel(null)
+        }}
+        onSuccess={fetchDashboardData}
+        personnel={selectedPersonnel}
+        locations={locations}
       />
     </div>
   )

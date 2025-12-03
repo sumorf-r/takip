@@ -78,28 +78,32 @@ const AdminLogin = () => {
             className="mb-6"
           >
             {/* mes.ai Logo */}
-            <div className="flex justify-center items-center gap-3">
-              <svg width="60" height="60" viewBox="0 0 100 100" className="text-white">
-                <g fill="currentColor">
-                  {/* Clock flower petals */}
-                  <circle cx="50" cy="15" r="8" opacity="0.9"/>
-                  <circle cx="73" cy="27" r="8" opacity="0.9"/>
-                  <circle cx="85" cy="50" r="8" opacity="0.9"/>
-                  <circle cx="73" cy="73" r="8" opacity="0.9"/>
-                  <circle cx="50" cy="85" r="8" opacity="0.9"/>
-                  <circle cx="27" cy="73" r="8" opacity="0.9"/>
-                  <circle cx="15" cy="50" r="8" opacity="0.9"/>
-                  <circle cx="27" cy="27" r="8" opacity="0.9"/>
+            <div className="flex justify-center items-center gap-4">
+              <svg width="70" height="70" viewBox="0 0 100 100" className="text-white">
+                <g fill="none" stroke="currentColor" strokeWidth="3.5">
+                  {/* Flower-like clock design */}
+                  {/* Petals */}
+                  <ellipse cx="50" cy="20" rx="12" ry="15" fill="currentColor" opacity="0.9" transform="rotate(0 50 50)"/>
+                  <ellipse cx="50" cy="20" rx="12" ry="15" fill="currentColor" opacity="0.9" transform="rotate(45 50 50)"/>
+                  <ellipse cx="50" cy="20" rx="12" ry="15" fill="currentColor" opacity="0.9" transform="rotate(90 50 50)"/>
+                  <ellipse cx="50" cy="20" rx="12" ry="15" fill="currentColor" opacity="0.9" transform="rotate(135 50 50)"/>
+                  <ellipse cx="50" cy="20" rx="12" ry="15" fill="currentColor" opacity="0.9" transform="rotate(180 50 50)"/>
+                  <ellipse cx="50" cy="20" rx="12" ry="15" fill="currentColor" opacity="0.9" transform="rotate(225 50 50)"/>
+                  <ellipse cx="50" cy="20" rx="12" ry="15" fill="currentColor" opacity="0.9" transform="rotate(270 50 50)"/>
+                  <ellipse cx="50" cy="20" rx="12" ry="15" fill="currentColor" opacity="0.9" transform="rotate(315 50 50)"/>
                   
-                  {/* Center clock */}
-                  <circle cx="50" cy="50" r="22" fill="none" stroke="currentColor" strokeWidth="3"/>
-                  <circle cx="50" cy="50" r="2"/>
+                  {/* Center clock circle */}
+                  <circle cx="50" cy="50" r="20" fill="#3d1e5d" stroke="currentColor"/>
+                  
                   {/* Clock hands */}
-                  <line x1="50" y1="50" x2="50" y2="35" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-                  <line x1="50" y1="50" x2="60" y2="55" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  <line x1="50" y1="50" x2="50" y2="35" stroke="white" strokeWidth="3" strokeLinecap="round"/>
+                  <line x1="50" y1="50" x2="58" y2="55" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+                  
+                  {/* Center dot */}
+                  <circle cx="50" cy="50" r="3" fill="white"/>
                 </g>
               </svg>
-              <span className="text-5xl font-bold text-white tracking-tight">mes.ai</span>
+              <span className="text-5xl font-bold text-white tracking-wide lowercase">mes.ai</span>
             </div>
           </motion.div>
           <p className="text-white/90 text-lg">
@@ -233,7 +237,7 @@ const AdminLogin = () => {
 
         {/* Footer */}
         <div className="text-center mt-8 text-white/70 text-sm">
-          <p>© 2024 mes.ai</p>
+          <p>© 2025 mes.ai</p>
           <p className="mt-1">Personel Takip Sistemi</p>
         </div>
       </motion.div>

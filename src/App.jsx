@@ -6,6 +6,7 @@ import CheckIn from './pages/CheckIn'
 import AdminLogin from './pages/AdminLogin'
 import AdminDashboard from './pages/AdminDashboard'
 import Reports from './pages/Reports'
+import PersonnelDetail from './pages/PersonnelDetail'
 import ProtectedRoute from './components/ProtectedRoute'
 import Layout from './components/Layout'
 
@@ -30,6 +31,7 @@ function App() {
         <Route element={<Layout />}>
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/personnel" element={<AdminDashboard section="personnel" />} />
+          <Route path="/admin/personnel_detail/:id" element={<PersonnelDetail />} />
           <Route path="/admin/locations" element={<AdminDashboard section="locations" />} />
           <Route path="/admin/attendance" element={<AdminDashboard section="attendance" />} />
           <Route path="/admin/reports" element={<Reports />} />

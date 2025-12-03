@@ -557,10 +557,7 @@ const AdminDashboard = ({ section = 'dashboard' }) => {
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end gap-2">
                           <button 
-                            onClick={() => {
-                              setSelectedPersonnelId(person.id)
-                              setShowDetailModal(true)
-                            }}
+                            onClick={() => navigate(`/admin/personnel_detail/${person.id}`)}
                             className="text-primary-600 hover:text-primary-900 transition-colors"
                             title="Detay Görüntüle"
                           >

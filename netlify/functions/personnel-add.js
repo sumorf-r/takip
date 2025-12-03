@@ -44,7 +44,8 @@ export async function handler(event, context) {
       location_id,
       hire_date,
       salary,
-      password
+      password,
+      monthly_leave_days
     } = JSON.parse(event.body);
 
     const client = await pool.connect();
@@ -76,8 +77,9 @@ export async function handler(event, context) {
         `INSERT INTO personnel (
           personnel_no, name, surname, email, phone, 
           position, department, location_id, hire_date, 
-          salary, password_hash, is_active
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, true)
+          salary, password_hash, monthly_leave_days, 
+          remaining_leave_days, is_active
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $12, true)
         RETURNING *`,
         [
           personnel_no,
@@ -90,7 +92,8 @@ export async function handler(event, context) {
           location_id,
           hire_date || new Date().toISOString().split('T')[0],
           salary,
-          hashedPassword
+          hashedPassword,
+          monthly_leave_days || 4
         ]
       );
 

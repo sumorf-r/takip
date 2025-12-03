@@ -16,7 +16,8 @@ const PersonnelAddModal = ({ isOpen, onClose, onSuccess, locations }) => {
     location_id: '',
     hire_date: new Date().toISOString().split('T')[0],
     salary: '',
-    password: '123456'
+    password: '123456',
+    monthly_leave_days: 4
   })
 
   const handleSubmit = async (e) => {
@@ -241,6 +242,22 @@ const PersonnelAddModal = ({ isOpen, onClose, onSuccess, locations }) => {
                     placeholder="17000"
                     step="0.01"
                   />
+                </div>
+
+                {/* Aylık İzin Günü */}
+                <div>
+                  <label className="label">Aylık İzin Günü</label>
+                  <input
+                    type="number"
+                    name="monthly_leave_days"
+                    value={formData.monthly_leave_days}
+                    onChange={handleChange}
+                    className="input-field"
+                    placeholder="4"
+                    min="0"
+                    max="30"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Her ay kaç gün izin hakkı olacak</p>
                 </div>
 
                 {/* Şifre */}

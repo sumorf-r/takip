@@ -13,7 +13,9 @@ const PersonnelEditModal = ({ isOpen, onClose, onSuccess, personnel, locations }
     position: '',
     department: '',
     location_id: '',
-    salary: ''
+    salary: '',
+    monthly_leave_days: '',
+    remaining_leave_days: ''
   })
 
   useEffect(() => {
@@ -26,7 +28,9 @@ const PersonnelEditModal = ({ isOpen, onClose, onSuccess, personnel, locations }
         position: personnel.position || '',
         department: personnel.department || '',
         location_id: personnel.location_id || '',
-        salary: personnel.salary || ''
+        salary: personnel.salary || '',
+        monthly_leave_days: personnel.monthly_leave_days || 4,
+        remaining_leave_days: personnel.remaining_leave_days || 4
       })
     }
   }, [personnel])
@@ -216,6 +220,36 @@ const PersonnelEditModal = ({ isOpen, onClose, onSuccess, personnel, locations }
                     className="input-field"
                     step="0.01"
                   />
+                </div>
+
+                {/* Aylık İzin Günü */}
+                <div>
+                  <label className="label">Aylık İzin Günü</label>
+                  <input
+                    type="number"
+                    name="monthly_leave_days"
+                    value={formData.monthly_leave_days}
+                    onChange={handleChange}
+                    className="input-field"
+                    min="0"
+                    max="30"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Her ay kaç gün izin hakkı</p>
+                </div>
+
+                {/* Kalan İzin Günü */}
+                <div>
+                  <label className="label">Kalan İzin Günü</label>
+                  <input
+                    type="number"
+                    name="remaining_leave_days"
+                    value={formData.remaining_leave_days}
+                    onChange={handleChange}
+                    className="input-field"
+                    min="0"
+                    max="30"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Şu an kalan izin hakkı</p>
                 </div>
               </div>
 

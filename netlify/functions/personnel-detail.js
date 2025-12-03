@@ -24,9 +24,10 @@ export async function handler(event, context) {
   }
 
   try {
-    const { personnelId } = event.queryStringParameters || {};
+    const { id, personnelId } = event.queryStringParameters || {};
+    const finalId = id || personnelId;
 
-    if (!personnelId) {
+    if (!finalId) {
       return {
         statusCode: 400,
         headers,
@@ -45,7 +46,7 @@ export async function handler(event, context) {
        FROM personnel p
        LEFT JOIN locations l ON p.location_id = l.id
        WHERE p.id = $1`,
-      [personnelId]
+      [finalId]
     );
 
     if (personnelQuery.rows.length === 0) {
@@ -78,7 +79,7 @@ export async function handler(event, context) {
        WHERE personnel_id = $1
        AND DATE_TRUNC('month', check_in_time) = DATE_TRUNC('month', CURRENT_DATE)
        AND check_out_time IS NOT NULL`,
-      [personnelId]
+      [finalId]
     );
 
     const currentMonth = currentMonthQuery.rows[0];
@@ -96,7 +97,7 @@ export async function handler(event, context) {
        WHERE personnel_id = $1
        AND check_in_time >= NOW() - INTERVAL '30 days'
        AND check_out_time IS NOT NULL`,
-      [personnelId]
+      [finalId]
     );
 
     const summary = attendanceQuery.rows[0];
@@ -116,7 +117,7 @@ export async function handler(event, context) {
        WHERE personnel_id = $1
        ORDER BY check_in_time DESC
        LIMIT 10`,
-      [personnelId]
+      [finalId]
     );
 
     client.release();

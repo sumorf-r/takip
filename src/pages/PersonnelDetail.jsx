@@ -28,7 +28,13 @@ const PersonnelDetail = () => {
 
       if (result.success) {
         setPersonnel(result.personnel)
-        setStats(result.stats)
+        // API'den gelen yapıya göre stats'i oluştur
+        setStats({
+          total_days: result.summary?.total_days || 0,
+          total_hours: result.summary?.total_hours || 0,
+          total_earnings: result.summary?.total_net_earnings || 0,
+          recent_attendance: result.recentAttendance || []
+        })
       } else {
         toast.error('Personel bilgileri yüklenemedi')
         navigate('/admin/personnel')
@@ -286,11 +292,11 @@ const PersonnelDetail = () => {
                         </div>
                         <div>
                           <p className="font-medium text-gray-900">
-                            {record.work_date ? format(new Date(record.work_date), 'dd MMMM yyyy', { locale: tr }) : '-'}
+                            {record.date ? format(new Date(record.date), 'dd MMMM yyyy', { locale: tr }) : '-'}
                           </p>
                           <p className="text-sm text-gray-600">
-                            {record.check_in_time ? record.check_in_time.substring(0, 5) : '-'} - {' '}
-                            {record.check_out_time ? record.check_out_time.substring(0, 5) : 'Devam ediyor'}
+                            {record.check_in ? record.check_in.substring(0, 5) : '-'} - {' '}
+                            {record.check_out ? record.check_out.substring(0, 5) : 'Devam ediyor'}
                           </p>
                         </div>
                       </div>

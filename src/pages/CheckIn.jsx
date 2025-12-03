@@ -375,19 +375,19 @@ const CheckIn = () => {
 
   // Token geçerli - Normal sayfa
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#3d1e5d' }}>
+    <div className="min-h-screen flex items-center justify-center p-3" style={{ backgroundColor: '#3d1e5d' }}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md"
       >
         {/* mes.ai Logo */}
-        <div className="text-center mb-6">
+        <div className="text-center mb-4">
           <motion.div 
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-            className="mb-4"
+            className="mb-3"
           >
             <div className="flex justify-center items-center gap-3">
               <svg width="50" height="50" viewBox="0 0 100 100" className="text-white">
@@ -417,42 +417,42 @@ const CheckIn = () => {
             </div>
           </motion.div>
           
-          <h1 className="text-2xl font-semibold text-white mb-2">
+          <h1 className="text-xl font-semibold text-white mb-1">
             Personel Giriş/Çıkış
           </h1>
-          <div className="flex items-center justify-center gap-2 text-white/80">
-            <MapPin className="w-4 h-4" />
+          <div className="flex items-center justify-center gap-2 text-white/80 text-sm">
+            <MapPin className="w-3 h-3" />
             <span>{locationNames[locationId] || 'Restoran'}</span>
           </div>
-          <div className="flex items-center justify-center gap-2 text-white/80 mt-1">
-            <Clock className="w-4 h-4" />
+          <div className="flex items-center justify-center gap-2 text-white/80 mt-1 text-sm">
+            <Clock className="w-3 h-3" />
             <span>{format(currentTime, 'HH:mm:ss')}</span>
           </div>
         </div>
 
         {/* Main Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-6">
+        <div className="bg-white rounded-2xl shadow-xl p-5">
           {!isLoggedIn ? (
             // Login Form
             <motion.form
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               onSubmit={handleLogin}
-              className="space-y-4"
+              className="space-y-3"
             >
-              <h2 className="text-xl font-bold text-gray-900 mb-4">
+              <h2 className="text-lg font-bold text-gray-900 mb-3">
                 Giriş Yapın
               </h2>
 
               <div>
-                <label className="label">Personel No</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Personel No</label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     type="text"
                     value={personnelNo}
                     onChange={(e) => setPersonnelNo(e.target.value)}
-                    className="input-field pl-10"
+                    className="w-full px-3 py-2.5 pl-9 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 text-sm"
                     placeholder="P001"
                     required
                   />
@@ -460,14 +460,14 @@ const CheckIn = () => {
               </div>
 
               <div>
-                <label className="label">Şifre</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Şifre</label>
                 <div className="relative">
-                  <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="input-field pl-10"
+                    className="w-full px-3 py-2.5 pl-9 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 text-sm"
                     placeholder="••••••••"
                     required
                   />
@@ -477,7 +477,7 @@ const CheckIn = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 text-white shadow-lg flex items-center justify-center gap-2"
+                className="w-full py-2.5 px-4 mt-1 rounded-lg font-medium text-sm transition-all duration-200 text-white shadow-lg flex items-center justify-center gap-2"
                 style={{ 
                   backgroundColor: loading ? '#5a2d83' : '#3d1e5d',
                   opacity: loading ? 0.7 : 1
@@ -487,12 +487,12 @@ const CheckIn = () => {
               >
                 {loading ? (
                   <>
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     Giriş yapılıyor...
                   </>
                 ) : (
                   <>
-                    <LogIn className="w-5 h-5" />
+                    <LogIn className="w-4 h-4" />
                     Giriş Yap
                   </>
                 )}
@@ -505,11 +505,11 @@ const CheckIn = () => {
               animate={{ opacity: 1, scale: 1 }}
               className="text-center"
             >
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">
+              <div className="mb-4">
+                <h2 className="text-xl font-bold text-gray-900">
                   Hoş geldiniz!
                 </h2>
-                <p className="text-lg text-gray-600 mt-2">
+                <p className="text-base text-gray-600 mt-1">
                   {personnelData?.name}
                 </p>
                 <p className="text-sm text-gray-500">
@@ -518,49 +518,35 @@ const CheckIn = () => {
               </div>
 
               {loading ? (
-                <div className="py-8">
-                  <Loader className="w-12 h-12 animate-spin mx-auto" style={{ color: '#3d1e5d' }} />
-                  <p className="text-gray-600 mt-4">İşleniyor...</p>
+                <div className="py-6">
+                  <Loader className="w-10 h-10 animate-spin mx-auto" style={{ color: '#3d1e5d' }} />
+                  <p className="text-gray-600 mt-3">İşleniyor...</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {!hasActiveCheckIn ? (
                     <button
                       onClick={() => handleCheckInOut('check-in')}
-                      className="w-full text-white py-4 px-6 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-3 shadow-lg"
+                      className="w-full text-white py-3.5 px-5 rounded-xl font-bold text-base transition-all flex items-center justify-center gap-2 shadow-lg"
                       style={{ backgroundColor: '#3d1e5d' }}
                       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2d1545'}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3d1e5d'}
                     >
-                      <LogIn className="w-6 h-6" />
+                      <LogIn className="w-5 h-5" />
                       GİRİŞ YAP
                     </button>
                   ) : (
                     <button
                       onClick={() => handleCheckInOut('check-out')}
-                      className="w-full text-white py-4 px-6 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-3 shadow-lg"
+                      className="w-full text-white py-3.5 px-5 rounded-xl font-bold text-base transition-all flex items-center justify-center gap-2 shadow-lg"
                       style={{ backgroundColor: '#7e3fb0' }}
                       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#5a2d83'}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#7e3fb0'}
                     >
-                      <LogOut className="w-6 h-6" />
+                      <LogOut className="w-5 h-5" />
                       ÇIKIŞ YAP
                     </button>
                   )}
-
-                  <button
-                    onClick={() => {
-                      setIsLoggedIn(false)
-                      setPersonnelData(null)
-                      sessionStorage.removeItem('personnelData')
-                    }}
-                    className="w-full py-2 transition-colors"
-                    style={{ color: '#7e3fb0' }}
-                    onMouseEnter={(e) => e.currentTarget.style.color = '#5a2d83'}
-                    onMouseLeave={(e) => e.currentTarget.style.color = '#7e3fb0'}
-                  >
-                    Başka Personel
-                  </button>
                 </div>
               )}
             </motion.div>
@@ -568,9 +554,8 @@ const CheckIn = () => {
         </div>
 
         {/* Info */}
-        <div className="text-center mt-6 text-gray-600 text-sm">
+        <div className="text-center mt-4 text-gray-500 text-xs">
           <p>QR kod ile giriş sistemi</p>
-          <p className="text-xs mt-1">{locationNames[locationId] || 'Restoran'}</p>
         </div>
       </motion.div>
     </div>

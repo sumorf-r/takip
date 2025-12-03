@@ -42,6 +42,31 @@ exports.handler = async (event) => {
 
     await client.connect()
 
+    // Location code'dan gerçek location ID'yi bul
+    let realLocationId = locationId;
+    
+    // Eğer locationId bir UUID değilse, location_code olarak ara
+    if (!locationId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+      const locationResult = await client.query(
+        'SELECT id FROM locations WHERE location_code = $1',
+        [locationId]
+      )
+      
+      if (locationResult.rows.length > 0) {
+        realLocationId = locationResult.rows[0].id
+      } else {
+        // Location bulunamadı, default location oluştur veya hata ver
+        return {
+          statusCode: 404,
+          headers,
+          body: JSON.stringify({ 
+            success: false, 
+            error: 'Location not found: ' + locationId 
+          })
+        }
+      }
+    }
+
     // Benzersiz token oluştur (32 karakter)
     const token = crypto.randomBytes(16).toString('hex')
     
@@ -57,7 +82,7 @@ exports.handler = async (event) => {
         created_at
       ) VALUES ($1, $2, $3, false, NOW())
       RETURNING *`,
-      [token, locationId, expiresAt]
+      [token, realLocationId, expiresAt]
     )
 
     return {

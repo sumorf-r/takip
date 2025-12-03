@@ -89,13 +89,22 @@ exports.handler = async (event) => {
       }
     }
 
-    // Token geçerli! location_id'yi döndür
+    // Token geçerli! Location bilgisini al
+    const locationResult = await client.query(
+      'SELECT location_code FROM locations WHERE id = $1',
+      [tokenData.location_id]
+    )
+    
+    const locationCode = locationResult.rows.length > 0 
+      ? locationResult.rows[0].location_code 
+      : tokenData.location_id
+    
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({
         success: true,
-        location_id: tokenData.location_id,
+        location_id: locationCode, // Frontend için location_code döndür
         token: token
       })
     }

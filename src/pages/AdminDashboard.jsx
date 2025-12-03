@@ -463,6 +463,9 @@ const AdminDashboard = ({ section = 'dashboard' }) => {
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Günlük Ücret
                 </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  İzin (Ay)
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Vardiya
                 </th>
@@ -477,13 +480,13 @@ const AdminDashboard = ({ section = 'dashboard' }) => {
             <tbody className="divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan="8" className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan="9" className="px-6 py-8 text-center text-gray-500">
                     Yükleniyor...
                   </td>
                 </tr>
               ) : personnel.length === 0 ? (
                 <tr>
-                  <td colSpan="8" className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan="9" className="px-6 py-8 text-center text-gray-500">
                     Henüz personel eklenmemiş
                   </td>
                 </tr>
@@ -524,6 +527,18 @@ const AdminDashboard = ({ section = 'dashboard' }) => {
                         <span className="text-sm text-gray-900">
                           {person.daily_wage ? `${Number(person.daily_wage).toFixed(2)} ₺` : '-'}
                         </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <div className="flex flex-col items-center gap-1">
+                          <span className={`text-sm font-semibold ${person.on_leave ? 'text-orange-600' : 'text-blue-600'}`}>
+                            {person.remaining_leave_days || 0} / {person.monthly_leave_days || 0} gün
+                          </span>
+                          {person.on_leave && (
+                            <span className="text-xs text-orange-600 font-medium">
+                              🏖️ İzinli
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-xs text-gray-600">

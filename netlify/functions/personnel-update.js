@@ -41,7 +41,9 @@ export async function handler(event, context) {
       position,
       department,
       location_id,
-      salary
+      salary,
+      monthly_leave_days,
+      remaining_leave_days
     } = JSON.parse(event.body);
 
     if (!personnelId) {
@@ -66,10 +68,12 @@ export async function handler(event, context) {
            department = COALESCE($6, department),
            location_id = COALESCE($7, location_id),
            salary = COALESCE($8, salary),
+           monthly_leave_days = COALESCE($9, monthly_leave_days),
+           remaining_leave_days = COALESCE($10, remaining_leave_days),
            updated_at = NOW()
-         WHERE id = $9
+         WHERE id = $11
          RETURNING *`,
-        [name, surname, email, phone, position, department, location_id, salary, personnelId]
+        [name, surname, email, phone, position, department, location_id, salary, monthly_leave_days, remaining_leave_days, personnelId]
       );
 
       if (result.rows.length === 0) {

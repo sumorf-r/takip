@@ -101,15 +101,34 @@ const QRDisplay = () => {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#3d1e5d' }}>
       <div className="w-full max-w-2xl">
-        {/* Header */}
+        {/* mes.ai Logo */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-6"
+          className="text-center mb-4"
         >
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
+          <div className="flex justify-center items-center gap-3 mb-4">
+            <svg width="50" height="50" viewBox="0 0 100 100" className="text-white">
+              <g fill="none" stroke="currentColor" strokeWidth="3.5">
+                <ellipse cx="50" cy="20" rx="12" ry="15" fill="currentColor" opacity="0.9" transform="rotate(0 50 50)"/>
+                <ellipse cx="50" cy="20" rx="12" ry="15" fill="currentColor" opacity="0.9" transform="rotate(45 50 50)"/>
+                <ellipse cx="50" cy="20" rx="12" ry="15" fill="currentColor" opacity="0.9" transform="rotate(90 50 50)"/>
+                <ellipse cx="50" cy="20" rx="12" ry="15" fill="currentColor" opacity="0.9" transform="rotate(135 50 50)"/>
+                <ellipse cx="50" cy="20" rx="12" ry="15" fill="currentColor" opacity="0.9" transform="rotate(180 50 50)"/>
+                <ellipse cx="50" cy="20" rx="12" ry="15" fill="currentColor" opacity="0.9" transform="rotate(225 50 50)"/>
+                <ellipse cx="50" cy="20" rx="12" ry="15" fill="currentColor" opacity="0.9" transform="rotate(270 50 50)"/>
+                <ellipse cx="50" cy="20" rx="12" ry="15" fill="currentColor" opacity="0.9" transform="rotate(315 50 50)"/>
+                <circle cx="50" cy="50" r="20" fill="#3d1e5d" stroke="currentColor"/>
+                <line x1="50" y1="50" x2="50" y2="35" stroke="white" strokeWidth="3" strokeLinecap="round"/>
+                <line x1="50" y1="50" x2="58" y2="55" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+                <circle cx="50" cy="50" r="3" fill="white"/>
+              </g>
+            </svg>
+            <span className="text-4xl font-bold text-white tracking-wide lowercase">mes.ai</span>
+          </div>
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
             Personel Giriş / Çıkış
           </h1>
           <div className="flex items-center justify-center gap-4 md:gap-6 text-white/90 text-sm md:text-base">
@@ -151,7 +170,7 @@ const QRDisplay = () => {
                 className="relative"
               >
                 {/* QR Code Container */}
-                <div className="relative p-8 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-3xl shadow-lg">
+                <div className="relative p-8 rounded-3xl shadow-lg" style={{ background: 'linear-gradient(135deg, #f3ebf9 0%, #e4d3f0 100%)' }}>
                   {qrDataUrl ? (
                     <img 
                       src={qrDataUrl} 
@@ -160,12 +179,12 @@ const QRDisplay = () => {
                     />
                   ) : (
                     <div className="w-72 h-72 md:w-96 md:h-96 flex items-center justify-center">
-                      <RefreshCw className="w-16 h-16 text-blue-400 animate-spin" />
+                      <RefreshCw className="w-16 h-16 animate-spin" style={{ color: '#7e3fb0' }} />
                     </div>
                   )}
                   
                   {/* Countdown Badge */}
-                  <div className="absolute -top-4 -right-4 bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-2xl px-5 py-3 shadow-xl">
+                  <div className="absolute -top-4 -right-4 text-white rounded-2xl px-5 py-3 shadow-xl" style={{ background: 'linear-gradient(135deg, #5a2d83 0%, #3d1e5d 100%)' }}>
                     <div className="text-center">
                       <div className="text-3xl font-bold">{countdown}</div>
                       <div className="text-xs opacity-90">saniye</div>
@@ -180,7 +199,8 @@ const QRDisplay = () => {
           <div className="mb-6">
             <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden shadow-inner">
               <motion.div 
-                className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full"
+                className="h-full rounded-full"
+                style={{ background: 'linear-gradient(90deg, #7e3fb0 0%, #3d1e5d 100%)' }}
                 animate={{ width: `${(countdown / 90) * 100}%` }}
                 transition={{ duration: 1, ease: "linear" }}
               />
@@ -214,8 +234,9 @@ const QRDisplay = () => {
           className="text-center mt-6 text-white/70"
         >
           <p className="text-sm">
-            © 2025 Personel Takip Sistemi
+            © 2025 mes.ai
           </p>
+          <p className="text-xs mt-1">Personel Takip Sistemi</p>
         </motion.div>
       </div>
     </div>

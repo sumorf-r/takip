@@ -5,7 +5,7 @@ import {
   Users, MapPin, FileText, Settings, LogOut, Home,
   Clock, Calendar, TrendingUp, Activity, Download,
   Plus, Edit, Trash2, Eye, Filter, Search,
-  ChevronLeft, ChevronRight, BarChart3, PieChart
+  ChevronLeft, ChevronRight, BarChart3, PieChart, DollarSign
 } from 'lucide-react'
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns'
 import { tr } from 'date-fns/locale'
@@ -17,6 +17,7 @@ import PersonnelDetailModal from '../components/PersonnelDetailModal'
 import PersonnelEditModal from '../components/PersonnelEditModal'
 import LocationAddModal from '../components/LocationAddModal'
 import LocationEditModal from '../components/LocationEditModal'
+import LiveEarningsCounter from '../components/LiveEarningsCounter'
 
 const AdminDashboard = ({ section = 'dashboard' }) => {
   const navigate = useNavigate()
@@ -327,33 +328,61 @@ const AdminDashboard = ({ section = 'dashboard' }) => {
           </div>
         </motion.div>
 
-        {/* Quick Actions */}
+        {/* Detaylı Canlı İstatistikler */}
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           className="card"
         >
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Hızlı İşlemler</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <button
-              onClick={() => setShowModal(true)}
-              className="p-4 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors"
-            >
-              <Plus className="w-6 h-6 text-primary-600 mb-2" />
-              <p className="text-sm font-medium text-gray-900">Personel Ekle</p>
-            </button>
-            <button className="p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors">
-              <MapPin className="w-6 h-6 text-green-600 mb-2" />
-              <p className="text-sm font-medium text-gray-900">Lokasyon Ekle</p>
-            </button>
-            <button className="p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors">
-              <BarChart3 className="w-6 h-6 text-purple-600 mb-2" />
-              <p className="text-sm font-medium text-gray-900">Rapor Oluştur</p>
-            </button>
-            <button className="p-4 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors">
-              <Download className="w-6 h-6 text-orange-600 mb-2" />
-              <p className="text-sm font-medium text-gray-900">Excel İndir</p>
-            </button>
+          <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <Activity className="w-6 h-6 text-primary-600" />
+            Canlı Detaylar
+          </h2>
+          <div className="space-y-4">
+            {/* Toplam Çalışan */}
+            <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+              <div>
+                <p className="text-sm text-gray-600">Toplam Çalışan</p>
+                <p className="text-2xl font-bold text-blue-600">{personnel.length}</p>
+              </div>
+              <Users className="w-8 h-8 text-blue-400" />
+            </div>
+
+            {/* Aktif Çalışanlar (Şu an çalışıyor) */}
+            <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+              <div>
+                <p className="text-sm text-gray-600">Aktif (Çalışıyor)</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {attendance.filter(a => !a.check_out_time).length}
+                </p>
+              </div>
+              <Clock className="w-8 h-8 text-green-400 animate-pulse" />
+            </div>
+
+            {/* İzinli */}
+            <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg">
+              <div>
+                <p className="text-sm text-gray-600">İzinli</p>
+                <p className="text-2xl font-bold text-orange-600">
+                  {personnel.filter(p => p.on_leave).length}
+                </p>
+              </div>
+              <Calendar className="w-8 h-8 text-orange-400" />
+            </div>
+
+            {/* Toplam Maaş Bordrоsu */}
+            <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg">
+              <div>
+                <p className="text-sm text-gray-600">Toplam Maaş Bordrosu</p>
+                <p className="text-2xl font-bold text-purple-600">
+                  {Number(personnel.reduce((sum, p) => sum + (Number(p.monthly_salary) || 0), 0)).toLocaleString('tr-TR')} ₺
+                </p>
+              </div>
+              <DollarSign className="w-8 h-8 text-purple-400" />
+            </div>
+
+            {/* CANLI HAK EDİŞ SAYACI */}
+            <LiveEarningsCounter attendance={attendance} />
           </div>
         </motion.div>
       </div>

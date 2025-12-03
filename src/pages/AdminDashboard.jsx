@@ -12,6 +12,7 @@ import { tr } from 'date-fns/locale'
 import { useAuthStore } from '../stores/authStore'
 import toast from 'react-hot-toast'
 import PersonnelAddModal from '../components/PersonnelAddModal'
+import PersonnelShiftModal from '../components/PersonnelShiftModal'
 
 const AdminDashboard = ({ section = 'dashboard' }) => {
   const navigate = useNavigate()
@@ -22,6 +23,8 @@ const AdminDashboard = ({ section = 'dashboard' }) => {
   const [dateFilter, setDateFilter] = useState('today')
   const [locationFilter, setLocationFilter] = useState('all')
   const [showModal, setShowModal] = useState(false)
+  const [showShiftModal, setShowShiftModal] = useState(false)
+  const [selectedPersonnel, setSelectedPersonnel] = useState(null)
   const [selectedItem, setSelectedItem] = useState(null)
   
   // API Data States
@@ -365,13 +368,23 @@ const AdminDashboard = ({ section = 'dashboard' }) => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end gap-2">
-                          <button className="text-primary-600 hover:text-primary-900">
+                          <button 
+                            onClick={() => {
+                              setSelectedPersonnel(person)
+                              setShowShiftModal(true)
+                            }}
+                            className="text-purple-600 hover:text-purple-900"
+                            title="Mesai Ayarları"
+                          >
+                            <Settings className="w-4 h-4" />
+                          </button>
+                          <button className="text-primary-600 hover:text-primary-900" title="Detay">
                             <Eye className="w-4 h-4" />
                           </button>
-                          <button className="text-blue-600 hover:text-blue-900">
+                          <button className="text-blue-600 hover:text-blue-900" title="Düzenle">
                             <Edit className="w-4 h-4" />
                           </button>
-                          <button className="text-red-600 hover:text-red-900">
+                          <button className="text-red-600 hover:text-red-900" title="Sil">
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
@@ -528,6 +541,17 @@ const AdminDashboard = ({ section = 'dashboard' }) => {
         onClose={() => setShowModal(false)}
         onSuccess={fetchDashboardData}
         locations={locations}
+      />
+
+      {/* Mesai Ayarları Modal */}
+      <PersonnelShiftModal
+        isOpen={showShiftModal}
+        onClose={() => {
+          setShowShiftModal(false)
+          setSelectedPersonnel(null)
+        }}
+        onSuccess={fetchDashboardData}
+        personnel={selectedPersonnel}
       />
     </div>
   )

@@ -233,20 +233,6 @@ const CheckIn = () => {
             : `✅ Çıkış yapıldı! Çalışma süresi: ${result.workHours || 0} saat`
         )
         
-        // Eğer erken çıkış uyarısı varsa göster
-        if (result.warning) {
-          setTimeout(() => {
-            toast.error(result.warning, {
-              duration: 6000,
-              style: {
-                background: '#FEF3C7',
-                color: '#92400E',
-                fontWeight: 'bold'
-              }
-            })
-          }, 500)
-        }
-        
         // 3 saniye sonra formu temizle
         setTimeout(() => {
           setIsLoggedIn(false)

@@ -90,7 +90,6 @@ export async function handler(event, context) {
       const hasOpenAttendance = openAttendanceQuery.rows.length > 0
       let attendanceRecord
       let workHours = 0
-      let earlyLeaveWarning = null
       
       // ========== CHECK-OUT ==========
       if (action === 'check-out' && hasOpenAttendance) {
@@ -100,12 +99,6 @@ export async function handler(event, context) {
         const checkOutTime = new Date()
         const checkInTime = new Date(attendance.check_in_time)
         workHours = (checkOutTime - checkInTime) / (1000 * 60 * 60)
-        
-        // Erken çıkma kontrolü
-        if (workHours < 8) {
-          const remainingHours = 8 - workHours
-          earlyLeaveWarning = `⚠️ Standart mesai süresini (8 saat) doldurmadınız. Kalan: ${remainingHours.toFixed(1)} saat. Erken çıkış cezası uygulanacaktır.`
-        }
         
         // Update attendance - Trigger otomatik hesaplama yapacak
         const updateQuery = await client.query(
@@ -124,20 +117,6 @@ export async function handler(event, context) {
         )
         
         attendanceRecord = updateQuery.rows[0]
-        
-        // Erken çıkma notification
-        if (earlyLeaveWarning) {
-          await client.query(
-            `INSERT INTO notifications (
-              recipient_id, 
-              recipient_type, 
-              title, 
-              message, 
-              type
-            ) VALUES ($1, 'personnel', $2, $3, 'warning')`,
-            [personnelId, 'Erken Çıkış Uyarısı', earlyLeaveWarning]
-          )
-        }
         
         // Log
         await client.query(
@@ -251,7 +230,6 @@ export async function handler(event, context) {
           personnel,
           workHours: workHours.toFixed(2),
           message: `${action === 'check-in' ? 'Giriş' : 'Çıkış'} başarıyla kaydedildi`,
-          warning: earlyLeaveWarning,
           securityWarnings: securityWarnings.length > 0 ? securityWarnings : null,
           deviceVerified: deviceId ? true : false
         })

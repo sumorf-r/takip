@@ -40,6 +40,7 @@ const AdminLogin = () => {
           token: result.token,
           expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
         }))
+        localStorage.setItem('userId', result.user.id)
         
         useAuthStore.setState({
           user: {

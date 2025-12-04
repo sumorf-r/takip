@@ -93,6 +93,34 @@ const Payroll = () => {
       return
     }
 
+    // userId'yi al
+    const getUserId = () => {
+      if (user?.id) return user.id
+      
+      const storedUserId = localStorage.getItem('userId')
+      if (storedUserId) return storedUserId
+      
+      const adminUser = localStorage.getItem('adminUser')
+      if (adminUser) {
+        try {
+          const parsed = JSON.parse(adminUser)
+          return parsed.id
+        } catch (e) {
+          console.error('AdminUser parse error:', e)
+        }
+      }
+      
+      return null
+    }
+
+    const calculatedBy = getUserId()
+    
+    if (!calculatedBy) {
+      toast.error('Kullanıcı bilgisi bulunamadı. Lütfen tekrar giriş yapın.')
+      navigate('/admin/login')
+      return
+    }
+
     setCalculating(true)
     try {
       const response = await fetch('/.netlify/functions/payroll-calculate', {
@@ -102,7 +130,7 @@ const Payroll = () => {
           personnelId: calculatePersonnelId,
           periodYear: selectedYear,
           periodMonth: selectedMonth,
-          calculatedBy: user?.id || localStorage.getItem('userId'),
+          calculatedBy: calculatedBy,
           autoApprove: false
         })
       })

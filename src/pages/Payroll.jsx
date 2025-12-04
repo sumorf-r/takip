@@ -5,7 +5,8 @@ import {
   DollarSign, Calendar, Users, TrendingUp, Download,
   Plus, Check, X, Clock, CreditCard, AlertCircle,
   FileText, Filter, Search, ChevronDown, Eye,
-  Loader, BarChart3, PieChart as PieChartIcon
+  Loader, BarChart3, PieChart as PieChartIcon,
+  Home, MapPin, Settings, LogOut
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { tr } from 'date-fns/locale'
@@ -237,8 +238,85 @@ const Payroll = () => {
     return texts[status] || status
   }
 
+  const menuItems = [
+    { id: 'dashboard', label: 'Ana Sayfa', icon: Home },
+    { id: 'personnel', label: 'Personeller', icon: Users },
+    { id: 'locations', label: 'Lokasyonlar', icon: MapPin },
+    { id: 'reports', label: 'Raporlar', icon: FileText },
+    { id: 'payroll', label: 'Bordro', icon: DollarSign },
+    { id: 'settings', label: 'Ayarlar', icon: Settings },
+  ]
+
+  const handleSectionChange = (sectionId) => {
+    if (sectionId === 'reports') {
+      navigate('/admin/reports')
+    } else if (sectionId === 'payroll') {
+      navigate('/admin/payroll')
+    } else {
+      navigate(`/admin/${sectionId === 'dashboard' ? 'dashboard' : sectionId}`)
+    }
+  }
+
+  const handleLogout = () => {
+    if (confirm('Çıkış yapmak istediğinize emin misiniz?')) {
+      useAuthStore.setState({ user: null, token: null })
+      localStorage.removeItem('adminUser')
+      localStorage.removeItem('adminToken')
+      localStorage.removeItem('userId')
+      navigate('/admin/login')
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="flex min-h-screen bg-gray-50">
+      {/* Sidebar */}
+      <div className="w-64 bg-white border-r border-gray-200 fixed h-full">
+        <div className="p-6 border-b border-gray-200">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent">
+            mes.ai
+          </h1>
+          <p className="text-sm text-gray-600 mt-1">Personel Takip</p>
+        </div>
+        
+        <nav className="p-4">
+          {menuItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => handleSectionChange(item.id)}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors mb-2 ${
+                item.id === 'payroll'
+                  ? 'bg-primary-50 text-primary-600'
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <item.icon className="w-5 h-5" />
+              <span className="font-medium">{item.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
+          <div className="flex items-center gap-3 mb-3 px-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+              {user?.name?.charAt(0) || 'A'}
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-gray-900">{user?.name || 'Admin'}</p>
+              <p className="text-xs text-gray-500">{user?.email || ''}</p>
+            </div>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            <span className="text-sm font-medium">Çıkış Yap</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="ml-64 flex-1 p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -813,6 +891,7 @@ const Payroll = () => {
             </motion.div>
           </div>
         )}
+      </div>
       </div>
     </div>
   )

@@ -54,7 +54,6 @@ exports.handler = async (event) => {
         p.overtime_hours,
         p.base_salary,
         p.overtime_pay,
-        p.bonus_amount,
         p.gross_salary,
         p.total_deductions,
         p.net_salary,

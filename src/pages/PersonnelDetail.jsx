@@ -4,7 +4,8 @@ import { motion } from 'framer-motion'
 import {
   ArrowLeft, User, Mail, Phone, MapPin, Calendar, 
   DollarSign, Clock, TrendingUp, Briefcase, Activity,
-  CheckCircle, XCircle, AlertCircle
+  CheckCircle, XCircle, AlertCircle, Edit3, Plus, Minus,
+  Check, X, FileText, AlertTriangle
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { tr } from 'date-fns/locale'
@@ -16,9 +17,16 @@ const PersonnelDetail = () => {
   const [loading, setLoading] = useState(true)
   const [personnel, setPersonnel] = useState(null)
   const [stats, setStats] = useState(null)
+  const [adjustments, setAdjustments] = useState([])
+  const [showAdjustmentModal, setShowAdjustmentModal] = useState(false)
+  const [adjustmentType, setAdjustmentType] = useState('bonus')
+  const [adjustmentAmount, setAdjustmentAmount] = useState('')
+  const [adjustmentReason, setAdjustmentReason] = useState('')
+  const [processingAdjustment, setProcessingAdjustment] = useState(false)
 
   useEffect(() => {
     fetchPersonnelDetail()
+    fetchAdjustments()
   }, [id])
 
   const fetchPersonnelDetail = async () => {
@@ -44,6 +52,61 @@ const PersonnelDetail = () => {
       toast.error('Bir hata oluştu')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchAdjustments = async () => {
+    try {
+      const response = await fetch(`/.netlify/functions/get-adjustments?personnelId=${id}`)
+      const result = await response.json()
+
+      if (result.success) {
+        setAdjustments(result.adjustments || [])
+      }
+    } catch (error) {
+      console.error('Adjustments fetch error:', error)
+    }
+  }
+
+  const handleAdjustmentSubmit = async () => {
+    if (!adjustmentAmount || !adjustmentReason) {
+      toast.error('Miktar ve sebep gerekli')
+      return
+    }
+
+    setProcessingAdjustment(true)
+    try {
+      const response = await fetch('/.netlify/functions/salary-adjustment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          personnelId: id,
+          attendanceId: null, // Manuel düzeltme için null
+          adjustmentType: adjustmentType,
+          amount: parseFloat(adjustmentAmount),
+          reason: adjustmentReason,
+          createdBy: localStorage.getItem('userId'),
+          autoApprove: true // Admin direkt onaylıyor
+        })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        toast.success(result.message)
+        setShowAdjustmentModal(false)
+        setAdjustmentAmount('')
+        setAdjustmentReason('')
+        fetchAdjustments()
+        fetchPersonnelDetail() // İstatistikleri yenile
+      } else {
+        toast.error(result.error || 'İşlem başarısız')
+      }
+    } catch (error) {
+      console.error('Adjustment error:', error)
+      toast.error('Bir hata oluştu')
+    } finally {
+      setProcessingAdjustment(false)
     }
   }
 
@@ -278,6 +341,73 @@ const PersonnelDetail = () => {
               </div>
             </div>
 
+            {/* Ücret Düzeltme/Ceza-Prim Yönetimi */}
+            <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                  <DollarSign className="w-6 h-6 text-green-600" />
+                  Ücret Yönetimi
+                </h3>
+                <button
+                  onClick={() => setShowAdjustmentModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  Düzeltme Ekle
+                </button>
+              </div>
+
+              {/* Düzeltme Geçmişi */}
+              {adjustments.length > 0 ? (
+                <div className="space-y-3">
+                  {adjustments.slice(0, 5).map((adj) => (
+                    <div key={adj.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border-l-4" style={{
+                      borderLeftColor: adj.adjustment_type === 'penalty' ? '#ef4444' : 
+                                       adj.adjustment_type === 'bonus' ? '#22c55e' : 
+                                       adj.adjustment_type === 'refund' ? '#3b82f6' : '#6366f1'
+                    }}>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          {adj.adjustment_type === 'penalty' && <Minus className="w-4 h-4 text-red-600" />}
+                          {adj.adjustment_type === 'bonus' && <Plus className="w-4 h-4 text-green-600" />}
+                          {adj.adjustment_type === 'refund' && <TrendingUp className="w-4 h-4 text-blue-600" />}
+                          {adj.adjustment_type === 'correction' && <Edit3 className="w-4 h-4 text-indigo-600" />}
+                          <span className="font-medium text-gray-900 capitalize">
+                            {adj.adjustment_type === 'penalty' ? 'Ceza' : 
+                             adj.adjustment_type === 'bonus' ? 'Prim' : 
+                             adj.adjustment_type === 'refund' ? 'İade' : 'Düzeltme'}
+                          </span>
+                          <span className={`text-xs px-2 py-0.5 rounded ${
+                            adj.status === 'approved' ? 'bg-green-100 text-green-700' : 
+                            adj.status === 'rejected' ? 'bg-red-100 text-red-700' : 
+                            'bg-yellow-100 text-yellow-700'
+                          }`}>
+                            {adj.status === 'approved' ? 'Onaylandı' : 
+                             adj.status === 'rejected' ? 'Reddedildi' : 'Bekliyor'}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-1">{adj.reason}</p>
+                        <p className="text-xs text-gray-500">
+                          {adj.created_at && format(new Date(adj.created_at), 'dd MMM yyyy HH:mm', { locale: tr })}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className={`text-2xl font-bold ${
+                          adj.adjustment_type === 'penalty' ? 'text-red-600' : 'text-green-600'
+                        }`}>
+                          {adj.adjustment_type === 'penalty' ? '-' : '+'}{Number(adj.amount).toFixed(2)} ₺
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  Henüz düzeltme kaydı yok
+                </div>
+              )}
+            </div>
+
             {/* Son Aktiviteler */}
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h3 className="text-xl font-bold text-gray-900 mb-6">Son Aktiviteler</h3>
@@ -320,6 +450,169 @@ const PersonnelDetail = () => {
             </div>
           </motion.div>
         </div>
+
+        {/* Düzeltme Modal */}
+        {showAdjustmentModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-gray-900">Ücret Düzeltmesi</h3>
+                <button
+                  onClick={() => setShowAdjustmentModal(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {/* Düzeltme Tipi */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    İşlem Tipi
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => setAdjustmentType('bonus')}
+                      className={`p-4 rounded-lg border-2 transition-all ${
+                        adjustmentType === 'bonus'
+                          ? 'border-green-500 bg-green-50'
+                          : 'border-gray-200 hover:border-green-300'
+                      }`}
+                    >
+                      <Plus className={`w-6 h-6 mx-auto mb-2 ${
+                        adjustmentType === 'bonus' ? 'text-green-600' : 'text-gray-400'
+                      }`} />
+                      <p className="text-sm font-medium">Prim/İkramiye</p>
+                    </button>
+                    
+                    <button
+                      onClick={() => setAdjustmentType('penalty')}
+                      className={`p-4 rounded-lg border-2 transition-all ${
+                        adjustmentType === 'penalty'
+                          ? 'border-red-500 bg-red-50'
+                          : 'border-gray-200 hover:border-red-300'
+                      }`}
+                    >
+                      <Minus className={`w-6 h-6 mx-auto mb-2 ${
+                        adjustmentType === 'penalty' ? 'text-red-600' : 'text-gray-400'
+                      }`} />
+                      <p className="text-sm font-medium">Ceza</p>
+                    </button>
+
+                    <button
+                      onClick={() => setAdjustmentType('refund')}
+                      className={`p-4 rounded-lg border-2 transition-all ${
+                        adjustmentType === 'refund'
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-200 hover:border-blue-300'
+                      }`}
+                    >
+                      <TrendingUp className={`w-6 h-6 mx-auto mb-2 ${
+                        adjustmentType === 'refund' ? 'text-blue-600' : 'text-gray-400'
+                      }`} />
+                      <p className="text-sm font-medium">İade</p>
+                    </button>
+
+                    <button
+                      onClick={() => setAdjustmentType('correction')}
+                      className={`p-4 rounded-lg border-2 transition-all ${
+                        adjustmentType === 'correction'
+                          ? 'border-indigo-500 bg-indigo-50'
+                          : 'border-gray-200 hover:border-indigo-300'
+                      }`}
+                    >
+                      <Edit3 className={`w-6 h-6 mx-auto mb-2 ${
+                        adjustmentType === 'correction' ? 'text-indigo-600' : 'text-gray-400'
+                      }`} />
+                      <p className="text-sm font-medium">Düzeltme</p>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Miktar */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Miktar (₺)
+                  </label>
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type="number"
+                      value={adjustmentAmount}
+                      onChange={(e) => setAdjustmentAmount(e.target.value)}
+                      placeholder="0.00"
+                      step="0.01"
+                      min="0"
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                {/* Sebep */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Sebep / Açıklama
+                  </label>
+                  <textarea
+                    value={adjustmentReason}
+                    onChange={(e) => setAdjustmentReason(e.target.value)}
+                    placeholder="Düzeltme sebebini yazın..."
+                    rows="3"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+                  />
+                </div>
+
+                {/* Uyarı */}
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <div className="flex gap-3">
+                    <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm text-yellow-800">
+                      <p className="font-medium mb-1">Dikkat!</p>
+                      <p>Bu işlem personelin {adjustmentType === 'penalty' ? 'ücretinden kesinti yapacak' : 'ücretine eklenecek'}. İşlem hemen uygulanacaktır.</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Butonlar */}
+                <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={() => setShowAdjustmentModal(false)}
+                    className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                    disabled={processingAdjustment}
+                  >
+                    İptal
+                  </button>
+                  <button
+                    onClick={handleAdjustmentSubmit}
+                    disabled={processingAdjustment || !adjustmentAmount || !adjustmentReason}
+                    className={`flex-1 px-4 py-3 rounded-lg font-medium text-white transition-colors flex items-center justify-center gap-2 ${
+                      processingAdjustment || !adjustmentAmount || !adjustmentReason
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : 'bg-primary-600 hover:bg-primary-700'
+                    }`}
+                  >
+                    {processingAdjustment ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        İşleniyor...
+                      </>
+                    ) : (
+                      <>
+                        <Check className="w-5 h-5" />
+                        Onayla ve Uygula
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
       </div>
     </div>
   )

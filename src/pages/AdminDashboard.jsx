@@ -107,6 +107,7 @@ const AdminDashboard = ({ section = 'dashboard' }) => {
     { id: 'personnel', label: 'Personeller', icon: Users },
     { id: 'locations', label: 'Lokasyonlar', icon: MapPin },
     { id: 'reports', label: 'Raporlar', icon: FileText },
+    { id: 'payroll', label: 'Bordro', icon: DollarSign },
     { id: 'settings', label: 'Ayarlar', icon: Settings },
   ]
 
@@ -121,6 +122,8 @@ const AdminDashboard = ({ section = 'dashboard' }) => {
     setActiveSection(sectionId)
     if (sectionId === 'reports') {
       navigate('/admin/reports')
+    } else if (sectionId === 'payroll') {
+      navigate('/admin/payroll')
     } else {
       navigate(`/admin/${sectionId === 'dashboard' ? 'dashboard' : sectionId}`)
     }

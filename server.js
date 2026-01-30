@@ -26,6 +26,14 @@ const pool = new Pool({
 app.use(cors());
 app.use(express.json());
 
+// Rewrite /.netlify/functions/* to /api/*
+app.use((req, res, next) => {
+  if (req.url.startsWith('/.netlify/functions/')) {
+    req.url = req.url.replace('/.netlify/functions/', '/api/');
+  }
+  next();
+});
+
 // Serve static files in production
 app.use(express.static(path.join(__dirname, 'dist')));
 
@@ -172,6 +180,17 @@ app.get('/api/get-dashboard-stats', async (req, res) => {
       [today]
     );
     
+    // Calculate average work hours
+    const avgHoursResult = await pool.query(
+      `SELECT AVG(EXTRACT(EPOCH FROM (check_out_time - check_in_time))/3600) as avg_hours
+       FROM attendance 
+       WHERE check_out_time IS NOT NULL 
+       AND DATE(check_in_time) >= CURRENT_DATE - INTERVAL '30 days'`
+    );
+    const avgWorkHours = avgHoursResult.rows[0]?.avg_hours 
+      ? parseFloat(avgHoursResult.rows[0].avg_hours).toFixed(1) 
+      : '0';
+    
     res.json({
       success: true,
       personnel: personnel.rows,
@@ -180,7 +199,9 @@ app.get('/api/get-dashboard-stats', async (req, res) => {
       stats: {
         totalPersonnel: personnel.rows.length,
         totalLocations: locations.rows.length,
-        presentToday: attendance.rows.length
+        presentToday: attendance.rows.length,
+        todayCheckIns: attendance.rows.length,
+        avgWorkHours: avgWorkHours
       }
     });
   } catch (error) {
@@ -405,12 +426,32 @@ app.get('/api/check-active-status', async (req, res) => {
 app.post('/api/qr-generate', async (req, res) => {
   try {
     const { locationId } = req.body;
+    
+    // locationId can be UUID or location_code - resolve to UUID
+    let actualLocationId = locationId;
+    
+    // Check if it's not a valid UUID (location_code instead)
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(locationId)) {
+      // It's a location_code, look up the UUID
+      const locationResult = await pool.query(
+        'SELECT id FROM locations WHERE location_code = $1',
+        [locationId]
+      );
+      
+      if (locationResult.rows.length === 0) {
+        return res.status(404).json({ success: false, error: 'Lokasyon bulunamadı' });
+      }
+      
+      actualLocationId = locationResult.rows[0].id;
+    }
+    
     const token = uuidv4();
     const expiresAt = new Date(Date.now() + 90000); // 90 seconds
     
     await pool.query(
       'INSERT INTO qr_codes (location_id, code, expires_at) VALUES ($1, $2, $3)',
-      [locationId, token, expiresAt]
+      [actualLocationId, token, expiresAt]
     );
     
     const qrDataUrl = await QRCode.toDataURL(token);
@@ -750,45 +791,6 @@ app.get('/api/reports-location', async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 });
-
-// ============================================
-// LEGACY NETLIFY FUNCTION COMPATIBILITY
-// ============================================
-
-// Redirect /.netlify/functions/* to /api/*
-app.use('/.netlify/functions/:func', (req, res, next) => {
-  req.url = `/api/${req.params.func}`;
-  next('route');
-});
-
-// Re-register all routes for netlify compatibility
-app.post('/.netlify/functions/admin-login', (req, res) => res.redirect(307, '/api/admin-login'));
-app.post('/.netlify/functions/auth-login', (req, res) => res.redirect(307, '/api/auth-login'));
-app.get('/.netlify/functions/auth-verify', (req, res) => res.redirect(307, '/api/auth-verify'));
-app.post('/.netlify/functions/db-auth-login', (req, res) => res.redirect(307, '/api/db-auth-login'));
-app.get('/.netlify/functions/get-dashboard-stats', (req, res) => res.redirect(307, '/api/get-dashboard-stats'));
-app.get('/.netlify/functions/personnel-detail', (req, res) => res.redirect(307, '/api/personnel-detail'));
-app.delete('/.netlify/functions/personnel-delete', (req, res) => res.redirect(307, '/api/personnel-delete'));
-app.post('/.netlify/functions/attendance-check', (req, res) => res.redirect(307, '/api/attendance-check'));
-app.post('/.netlify/functions/db-attendance-check', (req, res) => res.redirect(307, '/api/db-attendance-check'));
-app.get('/.netlify/functions/attendance-list', (req, res) => res.redirect(307, '/api/attendance-list'));
-app.get('/.netlify/functions/check-active-status', (req, res) => res.redirect(307, '/api/check-active-status'));
-app.post('/.netlify/functions/qr-generate', (req, res) => res.redirect(307, '/api/qr-generate'));
-app.post('/.netlify/functions/qr-validate', (req, res) => res.redirect(307, '/api/qr-validate'));
-app.delete('/.netlify/functions/location-delete', (req, res) => res.redirect(307, '/api/location-delete'));
-app.get('/.netlify/functions/payroll-list', (req, res) => res.redirect(307, '/api/payroll-list'));
-app.post('/.netlify/functions/payroll-calculate', (req, res) => res.redirect(307, '/api/payroll-calculate'));
-app.post('/.netlify/functions/payroll-approve', (req, res) => res.redirect(307, '/api/payroll-approve'));
-app.get('/.netlify/functions/leave-management', (req, res) => res.redirect(307, '/api/leave-management'));
-app.post('/.netlify/functions/leave-management', (req, res) => res.redirect(307, '/api/leave-management'));
-app.get('/.netlify/functions/absence-management', (req, res) => res.redirect(307, '/api/absence-management'));
-app.post('/.netlify/functions/absence-management', (req, res) => res.redirect(307, '/api/absence-management'));
-app.get('/.netlify/functions/get-adjustments', (req, res) => res.redirect(307, '/api/get-adjustments'));
-app.post('/.netlify/functions/salary-adjustment', (req, res) => res.redirect(307, '/api/salary-adjustment'));
-app.get('/.netlify/functions/advance-manage', (req, res) => res.redirect(307, '/api/advance-manage'));
-app.get('/.netlify/functions/reports-attendance', (req, res) => res.redirect(307, '/api/reports-attendance'));
-app.get('/.netlify/functions/reports-personnel', (req, res) => res.redirect(307, '/api/reports-personnel'));
-app.get('/.netlify/functions/reports-location', (req, res) => res.redirect(307, '/api/reports-location'));
 
 // Health check
 app.get('/health', (req, res) => {

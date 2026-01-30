@@ -1,0 +1,1 @@
+module.exports = require('./netlify/functions/db-attendance-check-v2.js')

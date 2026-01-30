@@ -1,0 +1,1 @@
+module.exports = require('./netlify/functions/attendance-quick-check.js')

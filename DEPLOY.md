@@ -1,151 +1,79 @@
-# 🚀 Kendi Sunucuna Deploy Etme
+# 🚀 Sunucuya Deploy
 
-## Gereksinimler
-
-- Docker & Docker Compose
-- Git
-
----
-
-## 🔧 Hızlı Kurulum
-
-### 1. Projeyi klonla
-
-```bash
-git clone <repo-url>
-cd takip
-```
-
-### 2. Environment dosyası oluştur
-
-```bash
-# .env dosyası oluştur
-cat > .env << 'EOF'
-# Database
-DB_PASSWORD=GucluBirSifre123!
-
-# JWT
-JWT_SECRET=cok-gizli-jwt-anahtari-degistir
-
-# App URLs
-VITE_API_URL=http://localhost:3001/.netlify/functions
-VITE_APP_URL=http://localhost:3001
-EOF
-```
-
-### 3. Docker ile başlat
-
-```bash
-# Sadece app + database
-docker-compose up -d
-
-# Nginx ile (production)
-docker-compose --profile production up -d
-```
-
-### 4. Tarayıcıda aç
-
-```
-http://localhost:3001
-```
+## Sunucu Bilgileri
+- **IP:** 5.175.136.74
+- **User:** root
 
 ---
 
-## 📋 Giriş Bilgileri
-
-| Tür | Kullanıcı | Şifre |
-|-----|-----------|-------|
-| **Admin** | admin@restaurant.com | admin123 |
-| **Personel** | P001, P002, P003, P004 | 123456 |
-
----
-
-## 🌐 Production Deploy (VPS/Dedicated Server)
+## Hızlı Kurulum (SSH ile)
 
 ### 1. Sunucuya bağlan
-
 ```bash
-ssh root@sunucu-ip
+ssh root@5.175.136.74
 ```
 
-### 2. Docker kur (Ubuntu)
-
+### 2. Docker kur (eğer yoksa)
 ```bash
 curl -fsSL https://get.docker.com | sh
 ```
 
-### 3. Projeyi çek ve başlat
-
+### 3. Proje klasörü oluştur
 ```bash
-git clone <repo-url>
-cd takip
-
-# .env dosyasını düzenle
-nano .env
-
-# Başlat
-docker-compose up -d --build
+mkdir -p /opt/takip
+cd /opt/takip
 ```
 
-### 4. Domain ayarla (Opsiyonel)
-
-`nginx.conf` dosyasında `server_name` satırını domain'inle değiştir.
-
----
-
-## 🔒 SSL Sertifikası (Let's Encrypt)
-
+### 4. Dosyaları kopyala (local'den)
 ```bash
-# Certbot ile SSL al
-docker run -it --rm \
-  -v ./ssl:/etc/letsencrypt \
-  -p 80:80 \
-  certbot/certbot certonly \
-  --standalone \
-  -d yourdomain.com
+# Local bilgisayarından çalıştır:
+scp -r * root@5.175.136.74:/opt/takip/
+```
 
-# nginx.conf'ta HTTPS bloğunu aktif et
-# docker-compose restart nginx
+### 5. Docker ile başlat
+```bash
+cd /opt/takip
+docker compose up -d --build
+```
+
+### 6. Erişim
+```
+http://5.175.136.74:3001
 ```
 
 ---
 
-## 📊 Portlar
+## Giriş Bilgileri
 
-| Servis | Port | Açıklama |
-|--------|------|----------|
-| App | 3001 | Frontend + API |
-| PostgreSQL | 5432 | Database |
-| Nginx | 80/443 | Reverse Proxy (opsiyonel) |
+| Tür | Kullanıcı | Şifre |
+|-----|-----------|-------|
+| **Admin** | admin@restaurant.com | admin123 |
+| **Personel** | P001 | 123456 |
 
 ---
 
-## 🔄 Yönetim Komutları
+## Yönetim Komutları
 
 ```bash
 # Durumu gör
-docker-compose ps
+docker compose ps
 
 # Logları gör
-docker-compose logs -f app
-docker-compose logs -f postgres
+docker compose logs -f
 
 # Yeniden başlat
-docker-compose restart
+docker compose restart
 
 # Durdur
-docker-compose down
+docker compose down
 
-# Tamamen sil (veritabanı dahil)
-docker-compose down -v
-
-# Yeniden build et
-docker-compose up -d --build
+# Güncelle ve yeniden başlat
+docker compose up -d --build
 ```
 
 ---
 
-## 🗄️ Database Yedekleme
+## Veritabanı Yedekleme
 
 ```bash
 # Yedek al
@@ -157,38 +85,12 @@ cat backup.sql | docker exec -i takip-postgres psql -U restaurant_app -d restaur
 
 ---
 
-## 🐛 Sorun Giderme
+## Port Açma (Firewall)
 
-### Container başlamıyor
 ```bash
-docker-compose logs app
+# UFW ile
+ufw allow 3001/tcp
+
+# iptables ile
+iptables -A INPUT -p tcp --dport 3001 -j ACCEPT
 ```
-
-### Database bağlantı hatası
-```bash
-# PostgreSQL'in hazır olduğundan emin ol
-docker exec takip-postgres pg_isready -U restaurant_app
-```
-
-### Port kullanımda
-```bash
-# Windows
-netstat -ano | findstr :3001
-
-# Linux
-lsof -i :3001
-```
-
----
-
-## 🔐 Güvenlik Önerileri
-
-1. ✅ `.env` dosyasındaki şifreleri değiştir
-2. ✅ JWT_SECRET'ı güçlü bir değerle değiştir
-3. ✅ Production'da SSL kullan
-4. ✅ Firewall ayarla (sadece 80/443 portlarını aç)
-5. ✅ Database portunu dışarıya kapatabilirsin (5432)
-
----
-
-**Sistem hazır! 🎉**

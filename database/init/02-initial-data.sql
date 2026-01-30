@@ -11,7 +11,7 @@ INSERT INTO locations (location_code, name, address, phone, city, district) VALU
 -- Password: admin123
 -- Hash generated with: bcrypt.hashSync('admin123', 10)
 INSERT INTO users (email, password_hash, name, role) VALUES
-('admin@restaurant.com', '$2a$10$YF8s5rqGkYHZBQVmR2xHZOzKxH5N0KQ7Xv4dT9yN8rGKmH5xYnH5W', 'Admin User', 'admin');
+('admin@restaurant.com', '$2a$10$yNGApGwl8xaPWdgsWRpGg.G7u.r2xGREMYlDFvMdKmgIYCh46CE5G', 'Admin User', 'admin');
 
 -- Insert Sample Personnel with passwords
 -- All personnel passwords are: 123456

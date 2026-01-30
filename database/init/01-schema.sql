@@ -10,6 +10,8 @@ CREATE TABLE locations (
     name VARCHAR(100) NOT NULL,
     address TEXT,
     phone VARCHAR(20),
+    city VARCHAR(100),
+    district VARCHAR(100),
     is_active BOOLEAN DEFAULT true,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -187,8 +189,10 @@ CREATE TABLE audit_logs (
     record_id UUID,
     old_values JSONB,
     new_values JSONB,
+    details TEXT,
     ip_address VARCHAR(45),
     user_agent TEXT,
+    created_by UUID,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

@@ -1,10 +1,10 @@
 -- Initial Data for Restaurant Personnel Tracking System
 
 -- Insert Locations
-INSERT INTO locations (location_code, name, address, phone) VALUES
-('cengelkoy', 'Çengelköy Şubesi', 'Çengelköy, İstanbul', '0216 123 4567'),
-('kadikoy', 'Kadıköy Şubesi', 'Kadıköy, İstanbul', '0216 234 5678'),
-('besiktas', 'Beşiktaş Şubesi', 'Beşiktaş, İstanbul', '0212 345 6789');
+INSERT INTO locations (location_code, name, address, phone, city, district) VALUES
+('cengelkoy', 'Çengelköy Şubesi', 'Çengelköy, İstanbul', '0216 123 4567', 'İstanbul', 'Üsküdar'),
+('kadikoy', 'Kadıköy Şubesi', 'Kadıköy, İstanbul', '0216 234 5678', 'İstanbul', 'Kadıköy'),
+('besiktas', 'Beşiktaş Şubesi', 'Beşiktaş, İstanbul', '0212 345 6789', 'İstanbul', 'Beşiktaş');
 
 -- Insert Admin User 
 -- Email: admin@restaurant.com

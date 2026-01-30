@@ -7,9 +7,13 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "netlify": "netlify dev"
+    "netlify": "netlify dev",
+    "server": "node server.js",
+    "start": "npm run build && NODE_ENV=production node server.js",
+    "dev:full": "concurrently \"npm run dev\" \"npm run server\""
   },
   "dependencies": {
+    "cors": "^2.8.5",
     "@supabase/supabase-js": "^2.39.0",
     "@tanstack/react-query": "^5.12.0",
     "@yudiel/react-qr-scanner": "^1.2.6",

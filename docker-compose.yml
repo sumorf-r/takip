@@ -3,10 +3,11 @@ services:
   postgres:
     image: postgres:15-alpine
     container_name: takip-postgres
+    restart: unless-stopped
     environment:
       POSTGRES_DB: restaurant_tracking
       POSTGRES_USER: restaurant_app
-      POSTGRES_PASSWORD: RestaurantDB2024Local
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-RestaurantDB2024Local}
       POSTGRES_INITDB_ARGS: "--encoding=UTF8"
     ports:
       - "5432:5432"
@@ -21,37 +22,53 @@ services:
     networks:
       - takip-network
 
-  # Frontend & Backend (Vite + Netlify Functions)
+  # Backend API + Frontend
   app:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: takip-app
+    restart: unless-stopped
     ports:
-      - "3000:3000"
-      - "8888:8888"
+      - "3001:3001"
     environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_URL=postgresql://restaurant_app:${DB_PASSWORD:-RestaurantDB2024Local}@postgres:5432/restaurant_tracking
       - VITE_DB_HOST=postgres
       - VITE_DB_PORT=5432
       - VITE_DB_NAME=restaurant_tracking
       - VITE_DB_USER=restaurant_app
-      - VITE_DB_PASSWORD=RestaurantDB2024Local
+      - VITE_DB_PASSWORD=${DB_PASSWORD:-RestaurantDB2024Local}
       - VITE_DB_SSL=false
-      - DATABASE_URL=postgresql://restaurant_app:RestaurantDB2024Local@postgres:5432/restaurant_tracking?sslmode=disable
-      - JWT_SECRET=local-development-secret-key-change-in-production
+      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
       - JWT_EXPIRES_IN=24h
-      - VITE_API_URL=http://localhost:8888/.netlify/functions
-      - VITE_APP_URL=http://localhost:3000
+      - VITE_API_URL=http://localhost:3001/.netlify/functions
+      - VITE_APP_URL=http://localhost:3001
       - VITE_QR_REFRESH_INTERVAL=90000
-    volumes:
-      - .:/app
-      - /app/node_modules
     depends_on:
       postgres:
         condition: service_healthy
-    command: npm run netlify
     networks:
       - takip-network
+
+  # Nginx Reverse Proxy (Optional - for SSL termination)
+  nginx:
+    image: nginx:alpine
+    container_name: takip-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - app
+    networks:
+      - takip-network
+    profiles:
+      - production
 
 volumes:
   postgres_data:

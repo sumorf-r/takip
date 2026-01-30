@@ -15,10 +15,12 @@
   to = "/.netlify/functions/:splat"
   status = 200
 
+# SPA fallback - only for routes, not static files
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+  conditions = {Role = ["admin"]}
 
 [functions]
   directory = "netlify/functions"

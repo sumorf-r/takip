@@ -3,7 +3,7 @@ import pg from 'pg'
 const { Pool } = pg
 
 const pool = new Pool({
-  host: process.env.VITE_DB_HOST || '5.175.136.149',
+  host: process.env.VITE_DB_HOST || 'localhost',
   port: process.env.VITE_DB_PORT || 5432,
   database: process.env.VITE_DB_NAME || 'restaurant_tracking',
   user: process.env.VITE_DB_USER || 'restaurant_app',

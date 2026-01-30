@@ -1,0 +1,62 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: takip-postgres
+    environment:
+      POSTGRES_DB: restaurant_tracking
+      POSTGRES_USER: restaurant_app
+      POSTGRES_PASSWORD: RestaurantDB2024Local
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U restaurant_app -d restaurant_tracking"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - takip-network
+
+  # Frontend & Backend (Vite + Netlify Functions)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: takip-app
+    ports:
+      - "3000:3000"
+      - "8888:8888"
+    environment:
+      - VITE_DB_HOST=postgres
+      - VITE_DB_PORT=5432
+      - VITE_DB_NAME=restaurant_tracking
+      - VITE_DB_USER=restaurant_app
+      - VITE_DB_PASSWORD=RestaurantDB2024Local
+      - VITE_DB_SSL=false
+      - DATABASE_URL=postgresql://restaurant_app:RestaurantDB2024Local@postgres:5432/restaurant_tracking?sslmode=disable
+      - JWT_SECRET=local-development-secret-key-change-in-production
+      - JWT_EXPIRES_IN=24h
+      - VITE_API_URL=http://localhost:8888/.netlify/functions
+      - VITE_APP_URL=http://localhost:3000
+      - VITE_QR_REFRESH_INTERVAL=90000
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: npm run netlify
+    networks:
+      - takip-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  takip-network:
+    driver: bridge

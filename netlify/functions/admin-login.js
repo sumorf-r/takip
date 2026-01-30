@@ -44,7 +44,7 @@ exports.handler = async (event) => {
 
     // Kullanıcıyı bul
     const result = await client.query(
-      `SELECT id, email, password_hash, name, role, is_active, full_name 
+      `SELECT id, email, password_hash, name, role, is_active 
        FROM users 
        WHERE email = $1 AND role = 'admin'`,
       [email]
@@ -111,7 +111,7 @@ exports.handler = async (event) => {
         user: {
           id: user.id,
           email: user.email,
-          name: user.full_name || user.name,
+          name: user.name,
           role: user.role
         },
         token: token,

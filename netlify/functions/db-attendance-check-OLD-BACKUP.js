@@ -3,7 +3,7 @@ import pg from 'pg'
 const { Pool } = pg
 
 const pool = new Pool({
-  host: process.env.VITE_DB_HOST || '5.175.136.149',
+  host: process.env.VITE_DB_HOST || 'localhost',
   port: process.env.VITE_DB_PORT || 5432,
   database: process.env.VITE_DB_NAME || 'restaurant_tracking',
   user: process.env.VITE_DB_USER || 'restaurant_app',
@@ -232,15 +232,7 @@ export async function handler(event, context) {
         })
       }
       
-    }
-    
-    // Log the action
-    await client.query(
-      'INSERT INTO audit_logs (personnel_id, action, table_name, record_id) VALUES ($1, $2, $3, $4)',
-      [personnelId, 'check_out', 'attendance', attendance.id]
-    )
-    
-  } else if (action === 'check-in' && !hasOpenAttendance) {
+    } else if (action === 'check-in' && !hasOpenAttendance) {
     // Check-in operation
     
     // Get work schedule if exists

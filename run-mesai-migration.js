@@ -9,12 +9,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const pool = new Pool({
-  host: '5.175.136.149',
-  port: 5432,
-  database: 'restaurant_tracking',
-  user: 'restaurant_app',
-  password: 'RestaurantDB2024Secure',
-  ssl: false
+  host: process.env.VITE_DB_HOST || 'localhost',
+  port: process.env.VITE_DB_PORT || 5432,
+  database: process.env.VITE_DB_NAME || 'restaurant_tracking',
+  user: process.env.VITE_DB_USER || 'restaurant_app',
+  password: process.env.VITE_DB_PASSWORD || 'RestaurantDB2024Local',
+  ssl: process.env.VITE_DB_SSL === 'true' ? { rejectUnauthorized: false } : false
 });
 
 async function runMigration() {
